@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @Validated
 @AllArgsConstructor
 @RestController
@@ -56,7 +58,7 @@ public class HabitController {
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
     })
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @ApiLocale
     public ResponseEntity<HabitDto> getHabitById(@PathVariable Long id,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
@@ -77,7 +79,7 @@ public class HabitController {
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
-    @GetMapping("")
+    @GetMapping(value = "", produces = APPLICATION_JSON_VALUE)
     @ApiPageableWithLocale
     public ResponseEntity<PageableDto<HabitDto>> getAll(
         @Parameter(hidden = true) @CurrentUser UserVO userVO,
@@ -99,7 +101,7 @@ public class HabitController {
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
-    @GetMapping("{id}/shopping-list")
+    @GetMapping(value = "{id}/shopping-list", produces = APPLICATION_JSON_VALUE)
     @ApiLocale
     public ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(
         @PathVariable Long id,
@@ -121,7 +123,7 @@ public class HabitController {
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
-    @GetMapping("/tags/search")
+    @GetMapping(value = "/tags/search", produces = APPLICATION_JSON_VALUE)
     @ApiPageableWithLocale
     public ResponseEntity<PageableDto<HabitDto>> getAllByTagsAndLanguageCode(
         @Parameter(hidden = true) @ValidLanguage Locale locale,
@@ -193,7 +195,7 @@ public class HabitController {
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
-    @GetMapping("/tags")
+    @GetMapping(value = "/tags", produces = APPLICATION_JSON_VALUE)
     @ApiLocale
     public ResponseEntity<List<String>> findAllHabitsTags(@Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK).body(tagsService.findAllHabitsTags(locale.getLanguage()));
@@ -216,7 +218,7 @@ public class HabitController {
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
     })
-    @PostMapping(path = "/custom", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(path = "/custom", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<AddCustomHabitDtoResponse> addCustomHabit(
         @RequestPart @Valid AddCustomHabitDtoRequest request,
         @Parameter(description = "Image of habit") @ImageValidation MultipartFile image,
@@ -243,7 +245,7 @@ public class HabitController {
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
     })
-    @GetMapping("/{habitId}/friends/profile-pictures")
+    @GetMapping(value = "/{habitId}/friends/profile-pictures", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<UserProfilePictureDto>> getFriendsAssignedToHabitProfilePictures(
         @PathVariable Long habitId,
         @Parameter(hidden = true) @CurrentUser UserVO userVO) {
