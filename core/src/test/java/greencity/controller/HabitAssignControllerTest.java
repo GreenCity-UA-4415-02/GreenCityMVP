@@ -267,50 +267,51 @@ class HabitAssignControllerTest {
     }
 
     @Test
-    @DisplayName("Test updateHabitAssignStatus should return 200 OK on successful status update")
-    void updateHabitAssignStatus_returnsOk() throws Exception {
-        UserVO testUserVO = new UserVO();
-        testUserVO.setId(1L);
-        testUserVO.setEmail("test@gmail.com");
+    @DisplayName("Test updateAssignByHabitId (status update) should return 200 OK on successful status update")
+    void updateAssignByHabitId_returnsOk() throws Exception {
         Long assignId = 101L;
-        HabitAssignStatDto expectedDto = HabitAssignStatDto.builder()
-                                                            .status(HabitAssignStatus.ACQUIRED)
-                                                            .build();
+
+        HabitAssignStatDto requestDto = HabitAssignStatDto.builder()
+                                                          .status(HabitAssignStatus.ACQUIRED)
+                                                          .build();
+
         HabitAssignManagementDto responseDto = HabitAssignManagementDto.builder()
                                                                        .id(assignId)
+                                                                       .habitId(5L) // Приклад
                                                                        .status(HabitAssignStatus.ACQUIRED)
                                                                        .build();
-        when(habitAssignService.updateStatusByHabitAssignId(assignId,expectedDto)).thenReturn(responseDto);
 
-        mockMvc.perform(patch("/habit/assign/{habitAssignId}/status", assignId)
-                       .param("status", "ACQUIRED")
+        when(habitAssignService.updateStatusByHabitAssignId(eq(assignId), any(HabitAssignStatDto.class))).thenReturn(responseDto);
+
+        mockMvc.perform(patch("/habit/assign/{habitAssignId}", assignId)
+                       .content(asJsonString(requestDto)) // Надсилаємо JSON-тіло
                        .contentType(MediaType.APPLICATION_JSON)
                        .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.id").value(assignId))
                .andExpect(jsonPath("$.status").value("ACQUIRED"));
 
-        verify(habitAssignService).updateStatusByHabitAssignId(assignId, expectedDto);
+        verify(habitAssignService).updateStatusByHabitAssignId(eq(assignId), any(HabitAssignStatDto.class));
     }
 
-//    @Test
-//    @DisplayName("Test updateHabitAssignStatus should return 404 Not Found when habit assign does not exist")
-//    void updateHabitAssignStatus_throwsNotFoundException() throws Exception {
-//        UserVO testUserVO = new UserVO();
-//        testUserVO.setId(1L);
-//        testUserVO.setEmail("test@gmail.com");
-//        Long nonExistentAssignId = 999L;
-//
-//        when(habitAssignService.updateStatusByHabitAssignId(nonExistentAssignId, testUserVO))
-//                .thenThrow(new NotFoundException("Habit assignment not found."));
-//
-//        mockMvc.perform(patch("/habit/assign/{habitAssignId}/status", nonExistentAssignId)
-//                       .param("status", "ACQUIRED")
-//                       .contentType(MediaType.APPLICATION_JSON))
-//               .andExpect(status().isNotFound());
-//
-//        verify(habitAssignService).updateStatusByHabitAssignId(nonExistentAssignId, testUserVO);
-//    }
+    @Test
+    @DisplayName("Test updateAssignByHabitId (status update) should return 404 Not Found when habit assign does not exist")
+    void updateAssignByHabitId_throwsNotFoundException() throws Exception {
+        Long nonExistentAssignId = 999L;
+        HabitAssignStatDto requestDto = HabitAssignStatDto.builder()
+                                                          .status(HabitAssignStatus.ACQUIRED)
+                                                          .build();
+
+        when(habitAssignService.updateStatusByHabitAssignId(eq(nonExistentAssignId), any(HabitAssignStatDto.class)))
+                .thenThrow(new NotFoundException("Habit assignment not found."));
+
+        mockMvc.perform(patch("/habit/assign/{habitAssignId}", nonExistentAssignId)
+                       .content(asJsonString(requestDto))
+                       .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isNotFound());
+
+        verify(habitAssignService).updateStatusByHabitAssignId(eq(nonExistentAssignId), any(HabitAssignStatDto.class));
+    }
 
     @Test
     @DisplayName("Test deleteHabitAssign should return 200 OK on successful deletion")
