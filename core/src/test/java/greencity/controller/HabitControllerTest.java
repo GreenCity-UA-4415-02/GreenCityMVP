@@ -1,5 +1,6 @@
 package greencity.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import greencity.annotations.CurrentUser;
 
 import greencity.dto.PageableDto;
@@ -10,6 +11,7 @@ import greencity.dto.shoppinglistitem.ShoppingListItemDto;
 import greencity.dto.user.UserProfilePictureDto;
 import greencity.dto.user.UserVO;
 import greencity.exception.exceptions.BadRequestException;
+import greencity.exception.handler.CustomExceptionHandler;
 import greencity.service.HabitService;
 import greencity.service.TagsService;
 import jakarta.servlet.ServletException;
@@ -20,6 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -59,6 +63,10 @@ class HabitControllerTest {
     private HabitService habitService;
     @Mock
     private TagsService tagsService;
+    @Mock
+    private ObjectMapper objectMapper;
+
+    private final ErrorAttributes errorAttributes = new DefaultErrorAttributes();
     @InjectMocks
     private HabitController habitController;
     private MockMvc mockMvc;
@@ -66,7 +74,7 @@ class HabitControllerTest {
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(habitController)
-                                      .setControllerAdvice(new TestExceptionHandler())
+                                      .setControllerAdvice(new CustomExceptionHandler(errorAttributes, objectMapper))
                                       .setCustomArgumentResolvers(
                                               new PageableHandlerMethodArgumentResolver(),
                                               new CurrentUserHandler())
@@ -103,7 +111,8 @@ class HabitControllerTest {
 
         mockMvc.perform(get("/habit/{id}", habitId)
                        .param("lang", "en")
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andDo(print())
                .andExpect(jsonPath("$.id").value(habitId));
@@ -125,7 +134,8 @@ class HabitControllerTest {
 
         mockMvc.perform(get("/habit")
                        .param("lang", "en")
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
         verify(habitService).getAllHabitsByLanguageCode(any(UserVO.class), any(Pageable.class), anyString());
     }
@@ -140,7 +150,8 @@ class HabitControllerTest {
 
         mockMvc.perform(get("/habit/{id}/shopping-list", habitId)
                        .param("lang", "en")
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
         verify(habitService).getShoppingListForHabit(habitId, locale.getLanguage());
@@ -159,7 +170,8 @@ class HabitControllerTest {
         mockMvc.perform(get("/habit/tags/search")
                        .param("tags", "test")
                        .param("lang", "en")
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
         verify(habitService).getAllByTagsAndLanguageCode(any(Pageable.class), any(), anyString());
@@ -180,7 +192,8 @@ class HabitControllerTest {
         mockMvc.perform(get("/habit/search")
                        .param("tags", "test")
                        .param("lang", "en")
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
         verify(habitService).getAllByDifferentParameters(any(UserVO.class), any(Pageable.class), any(), any(), any(), anyString());
@@ -190,7 +203,8 @@ class HabitControllerTest {
     @DisplayName("Test getAllByDifferentParameters without params should return 400 Bad Request")
     void getAllByDifferentParameters_withoutParams_returnsBadRequest() throws Exception {
         mockMvc.perform(get("/habit/search")
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
                .andExpect(result -> assertInstanceOf(BadRequestException.class, result.getResolvedException()));
     }
@@ -205,7 +219,8 @@ class HabitControllerTest {
 
         mockMvc.perform(get("/habit/tags")
                        .param("lang", "en")
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$[0]").value("test-tag"));
 
@@ -235,7 +250,7 @@ class HabitControllerTest {
                        .file(image)
                        .part(requestPart)
                        .principal(principal)
-                       .contentType(MediaType.MULTIPART_FORM_DATA))
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isCreated());
 
         verify(habitService).addCustomHabit(any(AddCustomHabitDtoRequest.class), any(MultipartFile.class), anyString());
@@ -258,17 +273,10 @@ class HabitControllerTest {
         when(habitService.getFriendsAssignedToHabitProfilePictures(any(Long.class), any(Long.class))).thenReturn(profilePictures);
 
         mockMvc.perform(get("/habit/{habitId}/friends/profile-pictures", habitId)
-                       .contentType(MediaType.APPLICATION_JSON))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
         verify(habitService).getFriendsAssignedToHabitProfilePictures(any(Long.class), any(Long.class));
-    }
-
-    @ControllerAdvice
-    private static class TestExceptionHandler {
-        @ExceptionHandler(BadRequestException.class)
-        public ResponseEntity<String> handleBadRequestException(BadRequestException ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-        }
     }
 }
