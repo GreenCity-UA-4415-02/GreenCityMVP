@@ -29,6 +29,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -459,7 +460,7 @@ class HabitAssignControllerTest {
 
     @Test
     @DisplayName("Test getListOfUserAndCustomShoppingListsInprogress should return 200 OK")
-    void getListOfUserAndCustomShoppingListsInprogress() throws Exception {
+    void getListOfUserAndCustomShoppingListsInprogressStatus200() throws Exception {
         UserVO testUserVO = new UserVO();
         testUserVO.setId(1L);
         testUserVO.setEmail("test@gmail.com");
@@ -485,7 +486,7 @@ class HabitAssignControllerTest {
 
     @Test
     @DisplayName("Test getAllHabitAssignsByHabitIdAndAcquired should return 200 OK")
-    void getAllHabitAssignsByHabitIdAndAcquired() throws Exception {
+    void getAllHabitAssignsByHabitIdAndAcquiredStatus200() throws Exception {
         Long habitId = 102L;
 
         List<HabitAssignDto> exceptedListDto = List.of(
@@ -505,5 +506,192 @@ class HabitAssignControllerTest {
                .andExpect(jsonPath("$[0].id").value(1L))
                .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
         verify(habitAssignService).getAllHabitAssignsByHabitIdAndStatusNotCancelled(habitId,"en");
+    }
+
+    @Test
+    @DisplayName("Test getHabitAssignByHabitId should return 200 OK")
+    void getHabitAssignByHabitIdStatus200() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        Long habitId = 102L;
+
+        HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build();
+
+        when(habitAssignService.findHabitAssignByUserIdAndHabitId(testUserVO.getId(), habitId,"en")).thenReturn(exceptedDto);
+
+        mockMvc.perform(get("/habit/assign/{habitId}/active", habitId)
+                       .locale(Locale.ENGLISH)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+        verify(habitAssignService).findHabitAssignByUserIdAndHabitId(testUserVO.getId(),habitId,"en");
+    }
+
+    @Test
+    @DisplayName("Test getUsersHabitByHabitAssignId should return 200 OK")
+    void getUsersHabitByHabitAssignIdStatus200() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        Long habitAssignId = 102L;
+
+        HabitDto exceptedDto = HabitDto.builder().id(1L).build();
+
+        when(habitAssignService.findHabitByUserIdAndHabitAssignId(testUserVO.getId(),habitAssignId,"en")).thenReturn(exceptedDto);
+
+        mockMvc.perform(get("/habit/assign/{habitAssignId}/more", habitAssignId)
+                       .locale(Locale.ENGLISH)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+        verify(habitAssignService).findHabitByUserIdAndHabitAssignId(testUserVO.getId(),habitAssignId,"en");
+    }
+
+    @Test
+    @DisplayName("Test enrollHabit should return 200 OK")
+    void enrollHabitStatus200() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        Long habitAssignId = 102L;
+        LocalDate date = LocalDate.now();
+
+        HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build();
+
+        when(habitAssignService.enrollHabit(habitAssignId,testUserVO.getId(), date, "en")).thenReturn(exceptedDto);
+
+        mockMvc.perform(post("/habit/assign/{habitAssignId}/enroll/{date}", habitAssignId, date)
+                       .locale(Locale.ENGLISH)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+        verify(habitAssignService).enrollHabit(habitAssignId,testUserVO.getId(), date, "en");
+    }
+
+    @Test
+    @DisplayName("Test unenrollHabit should return 200 OK")
+    void unenrollHabitStatus200() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        Long habitAssignId = 102L;
+        LocalDate date = LocalDate.now();
+
+        HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).build();
+
+        when(habitAssignService.unenrollHabit(habitAssignId,testUserVO.getId(),date)).thenReturn(exceptedDto);
+
+        mockMvc.perform(post("/habit/assign/{habitAssignId}/unenroll/{date}", habitAssignId, date)
+                       .locale(Locale.ENGLISH)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+        verify(habitAssignService).unenrollHabit(habitAssignId,testUserVO.getId(), date);
+    }
+
+    @Test
+    @DisplayName("Test getInprogressHabitAssignOnDate should return 200 OK")
+    void getInprogressHabitAssignOnDateStatus200() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        LocalDate date = LocalDate.now();
+
+        List<HabitAssignDto> exceptedDto = List.of(
+                HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build(),
+                HabitAssignDto.builder().id(2L).status(HabitAssignStatus.INPROGRESS).build()
+        );
+
+        when(habitAssignService.findInprogressHabitAssignsOnDate(testUserVO.getId(),date,"en")).thenReturn(exceptedDto);
+
+        mockMvc.perform(get("/habit/assign/active/{date}", date)
+                       .locale(Locale.ENGLISH)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$").isArray())
+               .andExpect(jsonPath("$.length()").value(2))
+               .andExpect(jsonPath("$[0].id").value(1L))
+               .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
+        verify(habitAssignService).findInprogressHabitAssignsOnDate(testUserVO.getId(),date,"en");
+    }
+
+    @Test
+    @DisplayName("Test getHabitAssignBetweenDates should return 200 OK")
+    void getHabitAssignBetweenDatesStatus200() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        LocalDate from = LocalDate.now();
+        LocalDate to = LocalDate.now().plusDays(1);
+
+        List<HabitsDateEnrollmentDto> exceptedListDto = List.of(
+                HabitsDateEnrollmentDto.builder().habitAssigns(Collections.emptyList()).build()
+        );
+
+        when(habitAssignService.findHabitAssignsBetweenDates(testUserVO.getId(),from,to,"en")).thenReturn(exceptedListDto);
+
+        mockMvc.perform(get("/habit/assign/activity/{from}/to/{to}", from, to)
+                       .locale(Locale.ENGLISH)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$").isArray())
+               .andExpect(jsonPath("$.length()").value(1));
+        verify(habitAssignService).findHabitAssignsBetweenDates(testUserVO.getId(),from,to,"en");
+    }
+
+    @Test
+    @DisplayName("Test cancelHabitAssign should return 200 OK")
+    void cancelHabitAssignStatus200() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        Long habitId = 102L;
+
+        HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build();
+
+        when(habitAssignService.cancelHabitAssign(habitId,testUserVO.getId())).thenReturn(exceptedDto);
+
+        mockMvc.perform(patch("/habit/assign/cancel/{habitId}", habitId)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+        verify(habitAssignService).cancelHabitAssign(habitId,testUserVO.getId());
+    }
+
+    @Test
+    @DisplayName("Test updateShoppingListStatus should return 200 OK")
+    void updateShoppingListStatus200() throws Exception {
+        UpdateUserShoppingListDto mockDto = UpdateUserShoppingListDto.builder()
+                                                                     .habitAssignId(102L)
+                                                                     .build();
+
+        doNothing().when(habitAssignService).updateUserShoppingListItem(any(UpdateUserShoppingListDto.class));
+
+        mockMvc.perform(put("/habit/assign/saveShoppingListForHabitAssign")
+                       .content(asJsonString(mockDto))
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+        verify(habitAssignService).updateUserShoppingListItem(any(UpdateUserShoppingListDto.class));
+    }
+
+    @Test
+    @DisplayName("Test updateProgressNotificationHasDisplayed should return 200 OK")
+    void updateProgressNotificationHasDisplayed() throws Exception {
+        UserVO testUserVO = new UserVO();
+        testUserVO.setId(1L);
+        testUserVO.setEmail("test@gmail.com");
+        Long habitId = 102L;
+
+        doNothing().when(habitAssignService).updateProgressNotificationHasDisplayed(habitId,testUserVO.getId());
+
+        mockMvc.perform(put("/habit/assign/{habitAssignId}/updateProgressNotificationHasDisplayed", habitId)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+        verify(habitAssignService).updateProgressNotificationHasDisplayed(habitId,testUserVO.getId());
     }
 }
