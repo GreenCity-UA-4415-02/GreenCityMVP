@@ -1,9 +1,12 @@
 package greencity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import greencity.annotations.CurrentUser;
 import greencity.dto.habitstatistic.*;
 import greencity.dto.user.UserVO;
+import greencity.enums.HabitRate;
 import greencity.exception.handler.CustomExceptionHandler;
 import greencity.service.HabitStatisticService;
 import jakarta.validation.constraints.NotNull;
@@ -56,7 +59,7 @@ class HabitStatisticControllerTest {
     private static final UserVO TEST_USER_VO;
     static {
         TEST_USER_VO = new UserVO();
-        TEST_USER_VO.setId(1L);
+        TEST_USER_VO.setId(2L);
         TEST_USER_VO.setEmail("test@gmail.com");
     }
 
@@ -105,29 +108,35 @@ class HabitStatisticControllerTest {
     @Test
     @DisplayName("Test saveHabitStatistic should return 200 OK")
     void saveHabitStatisticStatus200() throws Exception {
-        AddHabitStatisticDto habitStatisticDto = AddHabitStatisticDto.builder().amountOfItems(5).build();
+        AddHabitStatisticDto habitStatisticDto = AddHabitStatisticDto.builder()
+                                                                     .amountOfItems(5)
+                                                                     .habitRate(HabitRate.DEFAULT)
+                                                                     .createDate(ZonedDateTime.now())
+                                                                     .build();
 
         HabitStatisticDto exceptedDto= HabitStatisticDto.builder()
                                                         .id(1L)
                                                         .createDate(ZonedDateTime.now())
                                                         .habitAssignId(HABIT_ID)
+                                                        .habitRate(HabitRate.DEFAULT)
+                                                        .amountOfItems(5)
                                                         .build();
 
-        when(habitStatisticService.saveByHabitIdAndUserId(HABIT_ID,TEST_USER_VO.getId(),habitStatisticDto)).thenReturn(exceptedDto);
+        when(habitStatisticService.saveByHabitIdAndUserId(eq(HABIT_ID),eq(TEST_USER_VO.getId()),any(AddHabitStatisticDto.class))).thenReturn(exceptedDto);
 
         mockMvc.perform(post(HABIT_LINK + "/{habitId}", HABIT_ID)
                        .content(asJsonString(habitStatisticDto))
                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                        .accept(MediaType.APPLICATION_JSON_VALUE))
                .andExpect(status().isCreated());
-        verify(habitStatisticService).saveByHabitIdAndUserId(HABIT_ID, TEST_USER_VO.getId(), habitStatisticDto);
+        verify(habitStatisticService).saveByHabitIdAndUserId(eq(HABIT_ID), eq(TEST_USER_VO.getId()), any(AddHabitStatisticDto.class));
     }
 
     @Test
     @DisplayName("Test updateStatistic should return 200 OK")
     void updateStatisticStatus200() throws Exception {
-        UpdateHabitStatisticDto habitStatisticForUpdateDto = UpdateHabitStatisticDto.builder().amountOfItems(5).build();
-        UpdateHabitStatisticDto expectedDto = UpdateHabitStatisticDto.builder().amountOfItems(5).build();
+        UpdateHabitStatisticDto habitStatisticForUpdateDto = UpdateHabitStatisticDto.builder().amountOfItems(5).habitRate(HabitRate.DEFAULT).build();
+        UpdateHabitStatisticDto expectedDto = UpdateHabitStatisticDto.builder().amountOfItems(5).habitRate(HabitRate.DEFAULT).build();
 
         when(habitStatisticService.update(HABIT_ID,TEST_USER_VO.getId(),habitStatisticForUpdateDto)).thenReturn(expectedDto);
 
@@ -203,9 +212,14 @@ class HabitStatisticControllerTest {
         }
     }
 
-    private static String asJsonString(final Object obj) {
+    private String asJsonString(final Object obj) {
         try {
-            return new ObjectMapper().writeValueAsString(obj);
+            objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+
+            objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+            return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
