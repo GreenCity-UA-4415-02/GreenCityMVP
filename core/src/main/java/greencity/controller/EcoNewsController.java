@@ -9,6 +9,7 @@ import greencity.dto.tag.TagDto;
 import greencity.dto.tag.TagVO;
 import greencity.dto.user.UserVO;
 import greencity.exception.exceptions.NotFoundException;
+import greencity.exception.handler.ExceptionResponse;
 import greencity.service.EcoNewsService;
 import greencity.service.FileService;
 import greencity.service.TagsService;
@@ -64,8 +65,11 @@ public class EcoNewsController {
      */
     @Operation(summary = "Add new eco news.")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
-            content = @Content(schema = @Schema(implementation = EcoNewsGenericDto.class))),
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
+                    content = @Content(schema = @Schema(implementation = EcoNewsGenericDto.class))),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED,
+                    content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<EcoNewsGenericDto> save(
@@ -77,6 +81,7 @@ public class EcoNewsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ecoNewsService.saveEcoNews(addEcoNewsDtoRequest, image, principal.getName()));
     }
+
 
     /**
      * Method for uploading eco news image.
