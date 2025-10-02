@@ -377,11 +377,19 @@ public class EcoNewsController {
      * @return user liked news or not.
      */
     @Operation(summary = "Check if user liked news")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
     @GetMapping("/isLikedByUser")
-    public ResponseEntity<Boolean> checkNewsIsLikedByUser(@RequestParam("econewsId") Long econewsId,
-                                                          @Parameter(hidden = true) @CurrentUser UserVO user) {
-        return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.checkNewsIsLikedByUser(econewsId, user));
+    public ResponseEntity<Boolean> checkNewsIsLikedByUser(
+            @RequestParam("econewsId") Long econewsId,
+            @Parameter(hidden = true) @CurrentUser UserVO user) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ecoNewsService.checkNewsIsLikedByUser(econewsId, user));
     }
+
+
 
     /**
      * Method for getting some fields in eco news by id.
