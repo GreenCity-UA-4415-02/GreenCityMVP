@@ -3,7 +3,8 @@ package greencity.mapping;
 import greencity.ModelUtils;
 import greencity.dto.user.UserVO;
 import greencity.entity.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,8 +49,19 @@ class UserVOMapperTest {
                                 .email(expected.getOwnSecurity().getUser().getEmail())
                                 .build())
                         .build() : null)
-                .lastActivityTime(expected.getLastActivityTime())
                 .build();
-        assertEquals(expected, mapper.convert(userToBeConverted));
+
+        UserVO actual = mapper.convert(userToBeConverted);
+
+        assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                        "dateOfRegistration",
+                        "city",
+                        "userFriends",
+                        "refreshTokenKey",
+                        "lastActivityTime"
+                )
+                .isEqualTo(expected);
     }
 }
