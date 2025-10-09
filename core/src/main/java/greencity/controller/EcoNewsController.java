@@ -123,11 +123,8 @@ public class EcoNewsController {
     @PostMapping(path = "/uploadImages", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String[]> uploadImages(
             @Parameter(description = "Array of eco news images") MultipartFile[] images) {
-        if (images == null || images.length == 0) {
-            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
-        }
-        String[] uploadedPaths = ecoNewsService.uploadImages(images);
-        return ResponseEntity.status(HttpStatus.CREATED).body(uploadedPaths);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ecoNewsService.uploadImages(images));
     }
 
 
@@ -303,10 +300,7 @@ public class EcoNewsController {
             @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST)
     })
     @GetMapping("/recommended")
-    public ResponseEntity<List<EcoNewsDto>> getThreeRecommendedEcoNews(@RequestParam(required = false) Long openedEcoNewsId) {
-        if (openedEcoNewsId == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+    public ResponseEntity<List<EcoNewsDto>> getThreeRecommendedEcoNews(@RequestParam() Long openedEcoNewsId) {
         List<EcoNewsDto> threeRecommendedEcoNews = ecoNewsService.getThreeRecommendedEcoNews(openedEcoNewsId);
         return ResponseEntity.status(HttpStatus.OK).body(threeRecommendedEcoNews);
     }
@@ -400,12 +394,8 @@ public class EcoNewsController {
     public ResponseEntity<Boolean> checkNewsIsLikedByUser(
             @RequestParam("econewsId") Long econewsId,
             @Parameter(hidden = true) @CurrentUser UserVO user) {
-
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Boolean isLiked = ecoNewsService.checkNewsIsLikedByUser(econewsId, user);
-        return ResponseEntity.ok(isLiked);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ecoNewsService.checkNewsIsLikedByUser(econewsId, user));
     }
 
 
