@@ -3,7 +3,9 @@ package greencity.service;
 import greencity.dto.subscription.SubscriptionDto;
 import greencity.dto.subscription.SubscriptionResponseDto;
 import greencity.entity.NewsletterSubscription;
-import greencity.exception.exceptions.NotFoundException;
+import greencity.enums.SubscriptionSource;
+import greencity.enums.SubscriptionStatus;
+import greencity.exception.exceptions.EmailAlreadySignedUpException;
 import greencity.repository.NewsletterSubscriptionRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,8 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 
 /**
- * Реалізація інтерфейсу {@link NewsletterService}.
- * Містить бізнес-логіку підписки, включаючи перевірку на дублікати.
+ * Release interface {@link NewsletterService}.
  */
 @Service
 @RequiredArgsConstructor
@@ -25,19 +26,21 @@ public class NewsletterServiceImpl implements NewsletterService {
         String email = subscriptionDto.getEmail();
 
         if (newsletterSubscriptionRepo.existsByEmail(email)) {
-            throw new NotFoundException("User with email: " + email + " is already subscribed to the newsletter.");
+            throw new EmailAlreadySignedUpException("User with email: " + email + " is already subscribed to the newsletter.");
         }
 
         NewsletterSubscription subscriptionEntity = NewsletterSubscription.builder()
                                                                           .email(email)
-                                                                          .subscribedAt(ZonedDateTime.now())
+                                                                          .source(SubscriptionSource.LANDING)
+                                                                          .status(SubscriptionStatus.SUBSCRIBED)
+                                                                          .createdAt(ZonedDateTime.now())
                                                                           .build();
 
         NewsletterSubscription savedEntity = newsletterSubscriptionRepo.save(subscriptionEntity);
 
         return SubscriptionResponseDto.builder()
                                       .email(savedEntity.getEmail())
-                                      .subscribedAt(savedEntity.getSubscribedAt())
+                                      .subscribedAt(savedEntity.getCreatedAt())
                                       .build();
     }
 }

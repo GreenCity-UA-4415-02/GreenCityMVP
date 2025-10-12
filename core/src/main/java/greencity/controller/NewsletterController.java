@@ -14,25 +14,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/newsletter")
+@RequestMapping("/api/newsletter")
 @RequiredArgsConstructor
 public class NewsletterController {
 
     private final NewsletterService newsletterService;
 
     /**
-     * Обробляє запит на підписку.
+     * Processes subscription request.
      *
-     * @param subscriptionDto DTO, що містить електронну пошту.
-     * @return 200 OK, якщо підписка успішна.
-     * 409 CONFLICT, якщо пошта вже підписана (обробляється на рівні
+     * @param subscriptionDto DTO, that have email address.
+     * @return 200 OK, if subscribe successful.
+     * 409 CONFLICT, if the mail is already signed (processed at the level
      * ControllerAdvice).
      */
-    @Operation(summary = "Підписати користувача на розсилку новин",
+    @Operation(summary = "Subscribe a user to the newsletter",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Успішна підписка"),
-                    @ApiResponse(responseCode = "400", description = "Некоректний формат email"),
-                    @ApiResponse(responseCode = "409", description = "Користувач вже підписаний")
+                    @ApiResponse(responseCode = "200", description = "Successful subscription"),
+                    @ApiResponse(responseCode = "400", description = "Incorrect email format"),
+                    @ApiResponse(responseCode = "409", description = "The user is already signed in")
             })
     @PostMapping("/subscribe")
     public ResponseEntity<Void> subscribe(@Valid @RequestBody SubscriptionDto subscriptionDto) {
