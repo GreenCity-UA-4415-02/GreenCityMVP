@@ -2,6 +2,7 @@ package greencity.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,10 +25,10 @@ public class EventDateLocation {
     private LocalDateTime finishDate;
 
     @Column
-    private Double latitude;
+    private BigDecimal latitude;
 
     @Column
-    private Double longitude;
+    private BigDecimal longitude;
 
     @Column(name = "online_link")
     private String onlineLink;
@@ -36,3 +37,4 @@ public class EventDateLocation {
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 }
+

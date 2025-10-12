@@ -2,6 +2,7 @@ package greencity.service;
 
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
+import greencity.dto.event.DateLocationDto;
 import greencity.entity.Event;
 import greencity.entity.EventDateLocation;
 import greencity.entity.EventImage;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,13 +41,15 @@ public class EventServiceImpl implements EventService {
                 .isOpen(request.getOpen())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .createdBy(user)
                 .build();
 
         List<EventDateLocation> dateLocations = request.getDatesLocations().stream()
                 .map(dl -> EventDateLocation.builder()
                         .startDate(dl.getStartDate())
                         .finishDate(dl.getFinishDate())
+                        .latitude(dl.getLatitude())
+                        .longitude(dl.getLongitude())
+                        .onlineLink(dl.getOnlineLink())
                         .event(event)
                         .build())
                 .collect(Collectors.toList());

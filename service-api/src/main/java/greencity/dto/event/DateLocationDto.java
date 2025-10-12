@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
@@ -21,4 +22,10 @@ public class DateLocationDto {
 
     @NotBlank
     private String address;
+
+    private BigDecimal latitude;
+
+    private BigDecimal longitude;
+
+    private String onlineLink;
 }

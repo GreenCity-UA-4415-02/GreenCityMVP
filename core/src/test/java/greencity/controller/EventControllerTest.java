@@ -1,5 +1,6 @@
 package greencity.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper; // 👈 ДОДАНО
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.DateLocationDto;
@@ -21,8 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,21 +39,31 @@ class EventControllerTest {
     private EventService eventService;
 
     private Principal principal;
+    private final ObjectMapper objectMapper = new ObjectMapper(); // 👈 ДОДАНО
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(eventController).build();
         principal = () -> "user@example.com";
+        objectMapper.findAndRegisterModules(); // 👈 Для коректної роботи з LocalDateTime
     }
 
     @Test
     void createEventTest() throws Exception {
-        TagUaEnDto tag = new TagUaEnDto(1L, "Назва UA", "Name EN");
-        DateLocationDto dateLocation = new DateLocationDto(
-                LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2),
-                "Test Address"
-        );
+        TagUaEnDto tag = TagUaEnDto.builder().nameUa("Назва UA").nameEn("Name EN").build();
+
+        LocalDateTime futureStart = LocalDateTime.now().plusDays(1);
+        LocalDateTime futureFinish = LocalDateTime.now().plusDays(2);
+
+        DateLocationDto dateLocation = DateLocationDto.builder()
+                .startDate(futureStart)
+                .finishDate(futureFinish)
+                .address("Test Address")
+                .latitude(null)
+                .longitude(null)
+                .onlineLink(null)
+                .build();
+
         AddEventDtoRequest request = AddEventDtoRequest.builder()
                 .title("Test Event")
                 .description("This is a valid description for testing purposes.")
@@ -75,13 +85,7 @@ class EventControllerTest {
         when(eventService.create(any(AddEventDtoRequest.class), anyList(), anyString()))
                 .thenReturn(response);
 
-        String requestJson = "{\n" +
-                "  \"title\": \"Test Event\",\n" +
-                "  \"description\": \"This is a valid description for testing purposes.\",\n" +
-                "  \"open\": true,\n" +
-                "  \"tags\": [{\"id\":1,\"nameUa\":\"Назва UA\",\"nameEn\":\"Name EN\"}],\n" +
-                "  \"datesLocations\": [{\"startDate\":\"" + dateLocation.getStartDate() + "\",\"finishDate\":\"" + dateLocation.getFinishDate() + "\",\"address\":\"Test Address\"}]\n" +
-                "}";
+        String requestJson = objectMapper.writeValueAsString(request);
 
         MockMultipartFile jsonFile = new MockMultipartFile(
                 "event",
@@ -103,7 +107,6 @@ class EventControllerTest {
                         .principal(principal)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated());
-
-        verify(eventService).create(any(AddEventDtoRequest.class), anyList(), anyString());
+        verify(eventService).create(any(AddEventDtoRequest.class), anyList(), eq(principal.getName()));
     }
 }
