@@ -23,6 +23,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
@@ -30,7 +31,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
+    private final JdbcTemplate jdbcTemplate;
     @Value("300000")
     private long timeAfterLastActivity;
 
@@ -225,5 +229,119 @@ public class UserServiceImpl implements UserService {
             role = role.equals("all") ? null : role;
         }
         return new UserFilterDto(criteria, role, status);
+    }
+
+    /** ДОБАВЛЕНО ДЛЯ ФУНКЦІОНАЛУ ДРУЗІВ */
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserVO> getSixFriendsWithTheHighestRating(Long userId) {
+        List<User> friends = userRepo.getAllUserFriends(userId);
+        return friends.stream()
+            .sorted((u1, u2) -> {
+                Double rating1 = u1.getRating() != null ? u1.getRating() : 0.0;
+                Double rating2 = u2.getRating() != null ? u2.getRating() : 0.0;
+                return rating2.compareTo(rating1);
+            })
+            .limit(6)
+            .map(user -> modelMapper.map(user, UserVO.class))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserVO> getAllUserFriends(Long userId) {
+        List<User> friends = userRepo.getAllUserFriends(userId);
+        return friends.stream()
+            .map(user -> modelMapper.map(user, UserVO.class))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getFriendsCount(Long userId) {
+        return userRepo.getAllUserFriends(userId).size();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserVO> getRecommendedFriends(Long userId) {
+        List<Long> currentFriends = userRepo.getAllUserFriends(userId).stream()
+            .map(User::getId)
+            .collect(Collectors.toList());
+        currentFriends.add(userId);
+        
+        List<User> recommendedFriends = userRepo.getRecommendedFriends(userId);
+        
+        return recommendedFriends.stream()
+            .filter(user -> !currentFriends.contains(user.getId()))
+            .limit(10)
+            .map(user -> modelMapper.map(user, UserVO.class))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserVO> searchUsersByName(String name, Long currentUserId) {
+        List<Long> currentFriends = userRepo.getAllUserFriends(currentUserId).stream()
+            .map(User::getId)
+            .collect(Collectors.toList());
+        currentFriends.add(currentUserId);
+        
+        List<User> searchResults = userRepo.searchUsersByName(name, currentFriends);
+        
+        return searchResults.stream()
+            .map(user -> modelMapper.map(user, UserVO.class))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public boolean sendFriendRequest(Long fromUserId, Long toUserId) {
+        if (fromUserId.equals(toUserId) || userRepo.friendRequestExists(fromUserId, toUserId) || userRepo.areFriends(fromUserId, toUserId)) {
+            return false;
+        }
+        String sql = "INSERT INTO users_friends (user_id, friend_id, status, created_date) VALUES (?, ?, 'PENDING', NOW())";
+        int result = jdbcTemplate.update(sql, fromUserId, toUserId);
+        return result > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean acceptFriendRequest(Long fromUserId, Long toUserId) {
+        String updateSql = "UPDATE users_friends SET status = 'FRIEND' WHERE user_id = ? AND friend_id = ? AND status = 'PENDING'";
+        int result = jdbcTemplate.update(updateSql, fromUserId, toUserId);
+        
+        if (result > 0) {
+            String insertSql = "INSERT INTO users_friends (user_id, friend_id, status, created_date) VALUES (?, ?, 'FRIEND', NOW())";
+            jdbcTemplate.update(insertSql, toUserId, fromUserId);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    @Transactional
+    public boolean rejectFriendRequest(Long fromUserId, Long toUserId) {
+        String sql = "DELETE FROM users_friends WHERE user_id = ? AND friend_id = ? AND status = 'PENDING'";
+        int result = jdbcTemplate.update(sql, fromUserId, toUserId);
+        return result > 0;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserVO> getPendingFriendRequests(Long userId) {
+        List<User> pendingRequests = userRepo.getPendingFriendRequests(userId);
+        return pendingRequests.stream()
+            .map(user -> modelMapper.map(user, UserVO.class))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public boolean removeFriend(Long userId, Long friendId) {
+        String sql = "DELETE FROM users_friends WHERE " +
+            "((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = 'FRIEND'";
+        int result = jdbcTemplate.update(sql, userId, friendId, friendId, userId);
+        return result > 0;
     }
 }

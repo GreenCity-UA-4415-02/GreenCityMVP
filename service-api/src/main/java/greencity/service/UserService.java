@@ -9,6 +9,7 @@ import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import org.springframework.data.domain.Pageable;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -107,4 +108,17 @@ public interface UserService {
      * @param criteria value which we used to filter users.
      */
     PageableDto<UserManagementVO> getAllUsersByCriteria(String criteria, String role, String status, Pageable pageable);
+
+    /** ДОБАВЛЕНО ДЛЯ ФУНКЦІОНАЛУ ДРУЗІВ */
+    List<UserVO> getSixFriendsWithTheHighestRating(Long userId);
+    List<UserVO> getAllUserFriends(Long userId);
+    int getFriendsCount(Long userId);
+    List<UserVO> getRecommendedFriends(Long userId);
+    List<UserVO> searchUsersByName(String name, Long currentUserId);
+
+    boolean sendFriendRequest(Long fromUserId, Long toUserId);
+    boolean acceptFriendRequest(Long fromUserId, Long toUserId);
+    boolean rejectFriendRequest(Long fromUserId, Long toUserId);
+    List<UserVO> getPendingFriendRequests(Long userId);
+    boolean removeFriend(Long userId, Long friendId);
 }

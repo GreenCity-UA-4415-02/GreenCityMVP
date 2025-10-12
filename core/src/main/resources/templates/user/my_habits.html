@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>My Habits</title>
+    <style>
+        .friends-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .friends-title {
+            margin: 0 0 15px 0;
+            color: #2e7d32;
+            font-size: 1.5em;
+        }
+        .friends-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .btn-see-all, .btn-add-friend {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .btn-see-all {
+            background-color: #4caf50;
+            color: white;
+        }
+        .btn-add-friend {
+            background-color: #2196f3;
+            color: white;
+            font-size: 1.2em;
+        }
+        .btn-see-all:hover, .btn-add-friend:hover {
+            opacity: 0.8;
+        }
+        .friends-count {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .friends-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .friend-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: white;
+            min-width: 100px;
+        }
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .friend-avatar.default {
+            background-color: #4caf50;
+        }
+        .friend-name {
+            font-size: 0.9em;
+            text-align: center;
+            color: #333;
+        }
+        .habits-section {
+            margin-top: 30px;
+        }
+        .habits-title {
+            color: #2e7d32;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .habit-category {
+            margin-bottom: 25px;
+        }
+        .habit-category h3 {
+            color: #4caf50;
+            margin-bottom: 10px;
+        }
+        .habit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .habit-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Habits</h1>
+    
+    <!-- My Eco Friends Section -->
+    <div class="friends-section">
+        <h2 class="friends-title">My Eco Friends</h2>
+        <div class="friends-actions">
+            <a th:if="${friendsCount > 0}" th:href="@{/user/friends}" class="btn-see-all">See all</a>
+            <a th:href="@{/user/friends?tab=find}" class="btn-add-friend">+</a>
+        </div>
+        <div class="friends-count" th:text="${friendsCount} + ' connections'"></div>
+        <div th:if="${friendsCount > 0}" class="friends-list">
+            <div th:each="friend : ${topFriends}" class="friend-item">
+                <div th:if="${friend.profilePicturePath != null}">
+                    <img class="friend-avatar" th:src="${friend.profilePicturePath}" th:alt="${friend.name}">
+                </div>
+                <div th:if="${friend.profilePicturePath == null}">
+                    <div class="friend-avatar default" th:text="${@userServiceImpl.getInitialsById(friend.id)}"></div>
+                </div>
+                <div class="friend-name" th:text="${friend.name}"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Habits Section -->
+    <div class="habits-section">
+        <h2 class="habits-title">My Habits</h2>
+        
+        <!-- Acquired Habits -->
+        <div class="habit-category" th:if="${!acquiredHabits.empty}">
+            <h3>✅ Acquired Habits</h3>
+            <div class="habit-list">
+                <div th:each="habit : ${acquiredHabits}" class="habit-item">
+                    <strong th:text="${habit.habit.name}"></strong>
+                    <p th:text="${habit.habit.description}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Progress Habits -->
+        <div class="habit-category" th:if="${!inProgressHabits.empty}">
+            <h3>🔄 In Progress Habits</h3>
+            <div class="habit-list">
+                <div th:each="habit : ${inProgressHabits}" class="habit-item">
+                    <strong th:text="${habit.habit.name}"></strong>
+                    <p th:text="${habit.habit.description}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancelled Habits -->
+        <div class="habit-category" th:if="${!cancelledHabits.empty}">
+            <h3>❌ Cancelled Habits</h3>
+            <div class="habit-list">
+                <div th:each="habit : ${cancelledHabits}" class="habit-item">
+                    <strong th:text="${habit.habit.name}"></strong>
+                    <p th:text="${habit.habit.description}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Habits -->
+        <div class="habit-category" th:if="${!customHabits.empty}">
+            <h3>🎯 Custom Habits</h3>
+            <div class="habit-list">
+                <div th:each="habit : ${customHabits}" class="habit-item">
+                    <strong th:text="${habit.habit.name}"></strong>
+                    <p th:text="${habit.habit.description}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

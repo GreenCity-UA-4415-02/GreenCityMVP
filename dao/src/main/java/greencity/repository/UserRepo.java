@@ -140,4 +140,25 @@ public interface UserRepo extends JpaRepository<User, Long>, JpaSpecificationExe
         + "(SELECT user_id FROM users_friends WHERE friend_id = :userId and status = 'FRIEND')"
         + "UNION (SELECT friend_id FROM users_friends WHERE user_id = :userId and status = 'FRIEND'));")
     List<User> getAllUserFriends(Long userId);
+
+    /** ДОБАВЛЕНО ДЛЯ ФУНКЦІОНАЛУ ДРУЗІВ */
+    @Query(nativeQuery = true, value = "SELECT * FROM fn_recommended_friends(:userId)")
+    List<User> getRecommendedFriends(Long userId);
+
+    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE LOWER(name) LIKE LOWER(CONCAT('%', :name, '%')) AND id NOT IN :excludeIds LIMIT 20")
+    List<User> searchUsersByName(String name, List<Long> excludeIds);
+
+    @Query(nativeQuery = true, value = "SELECT u.* FROM users u " +
+            "JOIN users_friends uf ON u.id = uf.user_id " +
+            "WHERE uf.friend_id = :userId AND uf.status = 'PENDING'")
+    List<User> getPendingFriendRequests(Long userId);
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(*) > 0 FROM users_friends " +
+            "WHERE (user_id = :userId1 AND friend_id = :userId2) OR (user_id = :userId2 AND friend_id = :userId1)")
+    boolean friendRequestExists(Long userId1, Long userId2);
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(*) > 0 FROM users_friends " +
+            "WHERE ((user_id = :userId1 AND friend_id = :userId2) OR (user_id = :userId2 AND friend_id = :userId1)) " +
+            "AND status = 'FRIEND'")
+    boolean areFriends(Long userId1, Long userId2);
 }

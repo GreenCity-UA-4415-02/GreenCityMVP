@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>My Eco Friends</title>
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+        }
+        .tab-button {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            color: #4caf50;
+            border-bottom-color: #4caf50;
+        }
+        .tab-button:hover {
+            color: #4caf50;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .search-section {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .friends-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .friend-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .friend-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .friend-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.2em;
+        }
+        .friend-avatar.default {
+            background-color: #4caf50;
+        }
+        .friend-info h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        .friend-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .friend-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #4caf50;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #2196f3;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .empty-state h3 {
+            color: #999;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Eco Friends</h1>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-button" th:classappend="${activeTab == 'all'} ? 'active'" onclick="switchTab('all')">All friends</button>
+            <button class="tab-button" th:classappend="${activeTab == 'find'} ? 'active'" onclick="switchTab('find')">Find friends</button>
+            <button class="tab-button" th:classappend="${activeTab == 'requests'} ? 'active'" onclick="switchTab('requests')">Requests</button>
+        </div>
+
+        <!-- All Friends Tab -->
+        <div id="all-tab" class="tab-content" th:classappend="${activeTab == 'all'} ? 'active'">
+            <div th:if="${allFriends != null && !allFriends.empty}">
+                <div class="friends-grid">
+                    <div th:each="friend : ${allFriends}" class="friend-card">
+                        <div class="friend-header">
+                            <div th:if="${friend.profilePicturePath != null}">
+                                <img class="friend-avatar" th:src="${friend.profilePicturePath}" th:alt="${friend.name}">
+                            </div>
+                            <div th:if="${friend.profilePicturePath == null}">
+                                <div class="friend-avatar default" th:text="${@userServiceImpl.getInitialsById(friend.id)}"></div>
+                            </div>
+                            <div class="friend-info">
+                                <h3 th:text="${friend.name}"></h3>
+                                <p th:text="${friend.email}"></p>
+                            </div>
+                        </div>
+                        <div class="friend-actions">
+                            <button class="btn btn-danger" onclick="removeFriend([[${friend.id}]])">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${allFriends == null || allFriends.empty}" class="empty-state">
+                <h3>No friends yet</h3>
+                <p>Start by finding friends in the "Find friends" tab!</p>
+            </div>
+        </div>
+
+        <!-- Find Friends Tab -->
+        <div id="find-tab" class="tab-content" th:classappend="${activeTab == 'find'} ? 'active'">
+            <div class="search-section">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search for friends by name..." onkeyup="searchUsers()">
+            </div>
+            
+            <div id="searchResults" style="display: none;">
+                <h3>Search Results</h3>
+                <div id="searchResultsList" class="friends-grid"></div>
+            </div>
+            
+            <div th:if="${recommendedFriends != null && !recommendedFriends.empty}">
+                <h3>Recommended Friends</h3>
+                <div class="friends-grid">
+                    <div th:each="friend : ${recommendedFriends}" class="friend-card">
+                        <div class="friend-header">
+                            <div th:if="${friend.profilePicturePath != null}">
+                                <img class="friend-avatar" th:src="${friend.profilePicturePath}" th:alt="${friend.name}">
+                            </div>
+                            <div th:if="${friend.profilePicturePath == null}">
+                                <div class="friend-avatar default" th:text="${@userServiceImpl.getInitialsById(friend.id)}"></div>
+                            </div>
+                            <div class="friend-info">
+                                <h3 th:text="${friend.name}"></h3>
+                                <p th:text="${friend.email}"></p>
+                            </div>
+                        </div>
+                        <div class="friend-actions">
+                            <button class="btn btn-primary" onclick="addFriend([[${friend.id}]])">Add Friend</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${recommendedFriends == null || recommendedFriends.empty}" class="empty-state">
+                <h3>No recommended friends</h3>
+                <p>Try searching for friends by name above!</p>
+            </div>
+        </div>
+
+        <!-- Requests Tab -->
+        <div id="requests-tab" class="tab-content" th:classappend="${activeTab == 'requests'} ? 'active'">
+            <div th:if="${pendingRequests != null && !pendingRequests.empty}">
+                <div class="friends-grid">
+                    <div th:each="request : ${pendingRequests}" class="friend-card">
+                        <div class="friend-header">
+                            <div th:if="${request.profilePicturePath != null}">
+                                <img class="friend-avatar" th:src="${request.profilePicturePath}" th:alt="${request.name}">
+                            </div>
+                            <div th:if="${request.profilePicturePath == null}">
+                                <div class="friend-avatar default" th:text="${@userServiceImpl.getInitialsById(request.id)}"></div>
+                            </div>
+                            <div class="friend-info">
+                                <h3 th:text="${request.name}"></h3>
+                                <p th:text="${request.email}"></p>
+                            </div>
+                        </div>
+                        <div class="friend-actions">
+                            <button class="btn btn-primary" onclick="acceptRequest([[${request.id}]])">Accept</button>
+                            <button class="btn btn-danger" onclick="rejectRequest([[${request.id}]])">Reject</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${pendingRequests == null || pendingRequests.empty}" class="empty-state">
+                <h3>No pending requests</h3>
+                <p>You have no pending friend requests at the moment.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Update URL without page reload
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabName);
+            window.history.pushState({}, '', url);
+        }
+
+        function addFriend(friendId) {
+            fetch('/user/friends/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'friendId=' + friendId
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Friend request sent successfully!');
+                location.reload();
+            })
+            .catch(error => {
+                alert('Failed to send friend request');
+                console.error('Error:', error);
+            });
+        }
+
+        function removeFriend(friendId) {
+            if (confirm('Are you sure you want to remove this friend?')) {
+                fetch('/user/friends/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'friendId=' + friendId
+                })
+                .then(response => response.text())
+                .then(data => {
+                    alert('Friend removed successfully!');
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('Failed to remove friend');
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        function acceptRequest(friendId) {
+            fetch('/user/friends/accept', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'friendId=' + friendId
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Friend request accepted!');
+                location.reload();
+            })
+            .catch(error => {
+                alert('Failed to accept friend request');
+                console.error('Error:', error);
+            });
+        }
+
+        function rejectRequest(friendId) {
+            if (confirm('Are you sure you want to reject this friend request?')) {
+                fetch('/user/friends/reject', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'friendId=' + friendId
+                })
+                .then(response => response.text())
+                .then(data => {
+                    alert('Friend request rejected');
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('Failed to reject friend request');
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const searchResults = document.getElementById('searchResults');
+            const searchResultsList = document.getElementById('searchResultsList');
+            
+            if (searchTerm.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            fetch('/user/friends/search?name=' + encodeURIComponent(searchTerm))
+            .then(response => response.json())
+            .then(users => {
+                if (users.length > 0) {
+                    searchResultsList.innerHTML = users.map(user => `
+                        <div class="friend-card">
+                            <div class="friend-header">
+                                <div class="friend-avatar default">${user.name.charAt(0).toUpperCase()}</div>
+                                <div class="friend-info">
+                                    <h3>${user.name}</h3>
+                                    <p>${user.email}</p>
+                                </div>
+                            </div>
+                            <div class="friend-actions">
+                                <button class="btn btn-primary" onclick="addFriend(${user.id})">Add Friend</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                searchResults.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>
