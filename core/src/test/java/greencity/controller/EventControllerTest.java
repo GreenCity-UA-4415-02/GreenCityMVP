@@ -1,6 +1,6 @@
 package greencity.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper; // 👈 ДОДАНО
+import com.fasterxml.jackson.databind.ObjectMapper;
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.DateLocationDto;
@@ -39,13 +39,13 @@ class EventControllerTest {
     private EventService eventService;
 
     private Principal principal;
-    private final ObjectMapper objectMapper = new ObjectMapper(); // 👈 ДОДАНО
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(eventController).build();
         principal = () -> "user@example.com";
-        objectMapper.findAndRegisterModules(); // 👈 Для коректної роботи з LocalDateTime
+        objectMapper.findAndRegisterModules();
     }
 
     @Test
