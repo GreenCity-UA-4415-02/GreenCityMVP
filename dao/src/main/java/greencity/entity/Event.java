@@ -33,15 +33,15 @@ public class Event {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "events", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventDateLocation> dateTimeLocations;
 
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "events", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventImage> images;
 
     @ManyToMany
     @JoinTable(
-            name = "event_tags",
+            name = "events_tags",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
