@@ -1,5 +1,6 @@
 package greencity.controller;
 
+import greencity.dto.subscription.SubscribeResultDto;
 import greencity.dto.subscription.SubscriptionDto;
 import greencity.service.NewsletterService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,18 +26,15 @@ public class NewsletterController {
      *
      * @param subscriptionDto DTO, that have email address.
      * @return 200 OK, if subscribe successful.
-     * 409 CONFLICT, if the mail is already signed (processed at the level
-     * ControllerAdvice).
      */
     @Operation(summary = "Subscribe a user to the newsletter",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Successful subscription"),
-                    @ApiResponse(responseCode = "400", description = "Incorrect email format"),
-                    @ApiResponse(responseCode = "409", description = "The user is already signed in")
+                    @ApiResponse(responseCode = "200", description = "Successful subscription, body indicates if it's new or already subscribed"),
+                    @ApiResponse(responseCode = "400", description = "Incorrect email or source format")
             })
     @PostMapping("/subscribe")
-    public ResponseEntity<Void> subscribe(@Valid @RequestBody SubscriptionDto subscriptionDto) {
-        newsletterService.subscribe(subscriptionDto);
-        return ResponseEntity.status(HttpStatus.OK).build();
+    public ResponseEntity<SubscribeResultDto> subscribe(@Valid @RequestBody SubscriptionDto subscriptionDto) {
+        SubscribeResultDto result = newsletterService.subscribe(subscriptionDto);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }
