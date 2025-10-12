@@ -4,11 +4,11 @@ import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.entity.Event;
 import greencity.entity.EventDateLocation;
+import greencity.entity.EventImage;
 import greencity.entity.User;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.repository.EventRepo;
 import greencity.repository.UserRepo;
-import greencity.service.FileService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,17 +33,12 @@ public class EventServiceImpl implements EventService {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
-        List<String> uploadedImages = (images == null || images.isEmpty())
-                ? Collections.emptyList()
-                : images.stream()
-                .map(fileService::upload)
-                .collect(Collectors.toList());
-
         Event event = Event.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .open(request.getOpen())
-                .images(uploadedImages)
+                .isOpen(request.getOpen())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .createdBy(user)
                 .build();
 
@@ -51,21 +46,31 @@ public class EventServiceImpl implements EventService {
                 .map(dl -> EventDateLocation.builder()
                         .startDate(dl.getStartDate())
                         .finishDate(dl.getFinishDate())
-                        .address(dl.getAddress())
                         .event(event)
                         .build())
                 .collect(Collectors.toList());
+        event.setDateTimeLocations(dateLocations);
 
-        event.setDatesLocations(dateLocations);
+        List<EventImage> eventImages = (images == null ? Collections.emptyList() :
+                images.stream()
+                        .map(file -> EventImage.builder()
+                                .imagePath(fileService.upload(file))
+                                .isMain(false)
+                                .createdAt(LocalDateTime.now())
+                                .event(event)
+                                .build())
+                        .collect(Collectors.toList()));
+        event.setImages(eventImages);
+
         Event saved = eventRepo.save(event);
 
         return AddEventDtoResponse.builder()
                 .id(saved.getId())
                 .title(saved.getTitle())
                 .description(saved.getDescription())
-                .open(saved.getOpen())
-                .images(saved.getImages())
+                .open(saved.getIsOpen())
                 .datesLocations(request.getDatesLocations())
+                .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
                 .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
                 .build();
     }

@@ -2,6 +2,7 @@ package greencity.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -23,16 +24,20 @@ public class Event {
     @Column(length = 63206)
     private String description;
 
-    @Column(nullable = false)
-    private Boolean open;
+    @Column(name = "is_open", nullable = false)
+    private Boolean isOpen;
 
-    @ElementCollection
-    @CollectionTable(name = "event_images", joinColumns = @JoinColumn(name = "event_id"))
-    @Column(name = "image_url")
-    private List<String> images;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EventDateLocation> datesLocations;
+    private List<EventDateLocation> dateTimeLocations;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventImage> images;
 
     @ManyToMany
     @JoinTable(
