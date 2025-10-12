@@ -31,7 +31,9 @@ public class NewsletterServiceImpl implements NewsletterService {
 
         NewsletterSubscription subscriptionEntity = NewsletterSubscription.builder()
                                                                           .email(email)
-                                                                          .source(SubscriptionSource.LANDING)
+                                                                          .source(SubscriptionSource.valueOf(subscriptionDto
+                                                                                  .getSource()
+                                                                                  .toUpperCase()))
                                                                           .status(SubscriptionStatus.SUBSCRIBED)
                                                                           .createdAt(ZonedDateTime.now())
                                                                           .build();
