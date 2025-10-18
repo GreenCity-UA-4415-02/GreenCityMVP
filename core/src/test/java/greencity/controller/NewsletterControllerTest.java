@@ -3,6 +3,7 @@ package greencity.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import greencity.dto.subscription.SubscribeResultDto;
 import greencity.dto.subscription.SubscriptionDto;
+import greencity.dto.subscription.UnsubscriptionResultDto;
 import greencity.service.NewsletterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -97,6 +98,41 @@ class NewsletterControllerTest {
                                                                 .source("QR")
                                                                 .build();
         mockMvc.perform(post(NEWS_LETTER_LINK + "/subscribe")
+                       .content(objectMapper.writeValueAsString(invalidSubscriptionDto))
+                       .contentType(MediaType.APPLICATION_JSON_VALUE)
+                       .accept(MediaType.APPLICATION_JSON_VALUE))
+               .andExpect(status().isBadRequest());
+        verify(newsletterService, never()).subscribe(any(SubscriptionDto.class));
+    }
+    @Test
+    @DisplayName("Test unsubscribe should return 200 OK")
+    void unsubscribeStatus200() throws Exception {
+        UnsubscriptionResultDto expectedUnsubscriptionResultDto = UnsubscriptionResultDto.builder()
+                                                                                         .ok(true)
+                                                                                         .alreadySubscribed(true)
+                                                                                         .status("unsubscribed")
+                                                                                         .build();
+        when(newsletterService.unsubscribe(EMAIL)).thenReturn(expectedUnsubscriptionResultDto);
+
+        mockMvc.perform(post(NEWS_LETTER_LINK + "/unsubscribe")
+                .content(objectMapper.writeValueAsString(testSubscriptionDto))
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.ok").value(true))
+               .andExpect(jsonPath("$.alreadySubscribed").value(true))
+               .andExpect(jsonPath("$.status").value("unsubscribed"));
+        verify(newsletterService).unsubscribe(EMAIL);
+    }
+
+    @Test
+    @DisplayName("Test unsubscribe should return 400")
+    void unsubscribeStatus400() throws Exception {
+        SubscriptionDto invalidSubscriptionDto = SubscriptionDto.builder()
+                                                                .email("234@")
+                                                                .source("QR")
+                                                                .build();
+        mockMvc.perform(post(NEWS_LETTER_LINK + "/unsubscribe")
                        .content(objectMapper.writeValueAsString(invalidSubscriptionDto))
                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                        .accept(MediaType.APPLICATION_JSON_VALUE))
