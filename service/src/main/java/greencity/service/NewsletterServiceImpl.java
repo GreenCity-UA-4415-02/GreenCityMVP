@@ -14,13 +14,24 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 /**
- * Release interface {@link NewsletterService}.
+ * Implementation of the {@link NewsletterService} interface.
+ * Provides business logic for managing newsletter subscriptions and unsubscriptions.
  */
 @Service
 @RequiredArgsConstructor
 public class NewsletterServiceImpl implements NewsletterService {
     private final NewsletterSubscriptionRepo newsletterSubscriptionRepo;
 
+    /**
+     * Subscribes a user to the newsletter based on the provided email and source.
+     * The operation is **idempotent**:
+     * 1. If the email is not found, a new subscription is created with status {@code SUBSCRIBED}.
+     * 2. If the email is found and status is already {@code SUBSCRIBED}, returns a result indicating it was already subscribed.
+     * 3. If the email is found and status is {@code UNSUBSCRIBED}, the status is changed to {@code SUBSCRIBED}, and the {@code source} and {@code updatedAt} fields are updated.
+     *
+     * @param subscriptionDto DTO containing the user's email address and subscription source.
+     * @return {@link SubscribeResultDto} with the status of the subscription attempt.
+     */
     @Override
     @Transactional
     public SubscribeResultDto subscribe(SubscriptionDto subscriptionDto) {
@@ -63,6 +74,17 @@ public class NewsletterServiceImpl implements NewsletterService {
                                  .build();
     }
 
+    /**
+     * Unsubscribes a user from the newsletter based on the provided email.
+     * The operation is **idempotent** and always returns a successful response (HTTP 200) confirming the final status is 'unsubscribed'.
+     *
+     * 1. If the email is found and status is {@code SUBSCRIBED}, the status is changed to {@code UNSUBSCRIBED}.
+     * 2. If the email is found and status is already {@code UNSUBSCRIBED}, no change is made.
+     * 3. If the email is not found, no change is made.
+     *
+     * @param email The email address to unsubscribe.
+     * @return {@link UnsubscriptionResultDto} indicating the final 'unsubscribed' status and whether a record existed.
+     */
     @Override
     @Transactional
     public UnsubscriptionResultDto unsubscribe(String email) {
