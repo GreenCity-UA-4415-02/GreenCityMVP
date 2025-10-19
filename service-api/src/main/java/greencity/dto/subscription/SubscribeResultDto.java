@@ -7,8 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO representing the result of a subscription attempt for the POST /api/newsletter/subscribe endpoint.
- * Structure: { "ok": true, "alreadySubscribed": false/true }
+ * DTO representing the result of a subscription attempt for the POST
+ * /api/newsletter/subscribe endpoint. Structure: { "ok": true,
+ * "alreadySubscribed": false/true }
  */
 @Data
 @NoArgsConstructor
