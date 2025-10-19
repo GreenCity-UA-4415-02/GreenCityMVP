@@ -2,6 +2,7 @@ package greencity.controller;
 
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
+import greencity.dto.event.EventDto;
 import greencity.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,4 +36,11 @@ public class EventController {
         AddEventDtoResponse response = eventService.create(request, images, principal.getName());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+    @GetMapping("/visible")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<EventDto>> getVisibleEvents(@AuthenticationPrincipal Principal principal) {
+        List<EventDto> events = eventService.getVisibleEvents(principal.getName());
+        return ResponseEntity.ok(events);
+    }
+
 }

@@ -3,10 +3,8 @@ package greencity.service;
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.DateLocationDto;
-import greencity.entity.Event;
-import greencity.entity.EventDateLocation;
-import greencity.entity.EventImage;
-import greencity.entity.User;
+import greencity.dto.event.EventDto;
+import greencity.entity.*;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.repository.EventRepo;
 import greencity.repository.UserRepo;
@@ -15,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -79,6 +76,25 @@ public class EventServiceImpl implements EventService {
                 .build();
     }
 
+    @Override
+    public List<EventDto> getVisibleEvents(String userEmail) {
+        return eventRepo.findAllOpenEvents().stream()
+                .map(this::mapToEventDto)
+                .toList();
+    }
+
+
+    private EventDto mapToEventDto(Event event) {
+        return EventDto.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .is_open(event.getIsOpen())
+                .created_at(event.getCreatedAt())
+                //.images(event.getImages().stream().map(EventImage::getImagePath).toList())
+                .build();
+    }
+
     private void validateRequest(AddEventDtoRequest dto, List<MultipartFile> images) {
         if (dto.getTitle().length() > 70)
             throw new BadRequestException("Title must be ≤ 70 chars");
@@ -87,7 +103,7 @@ public class EventServiceImpl implements EventService {
         if (descLen < 20 || descLen > 63206)
             throw new BadRequestException("Description must be between 20 and 63206 chars");
 
-        if (dto.getDatesLocations().size() < 1 || dto.getDatesLocations().size() > 7)
+        if (dto.getDatesLocations().isEmpty() || dto.getDatesLocations().size() > 7)
             throw new BadRequestException("Must have 1–7 date/time pairs");
 
         if (dto.getDatesLocations().stream().anyMatch(d -> d.getStartDate().isBefore(LocalDateTime.now())))
