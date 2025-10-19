@@ -52,15 +52,29 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
         event.setDateTimeLocations(dateLocations);
 
-        List<EventImage> eventImages = (images == null ? Collections.emptyList() :
-                images.stream()
-                        .map(file -> EventImage.builder()
-                                .imagePath(fileService.upload(file))
-                                .isMain(false)
-                                .createdAt(LocalDateTime.now())
-                                .event(event)
-                                .build())
-                        .collect(Collectors.toList()));
+        List<EventImage> eventImages = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            boolean first = true;
+            for (MultipartFile file : images) {
+                String url = fileService.upload(file);
+                eventImages.add(EventImage.builder()
+                        .imagePath(url)
+                        .isMain(first) // перше зображення головне
+                        .createdAt(LocalDateTime.now())
+                        .event(event)
+                        .build());
+                first = false;
+            }
+        } else {
+            MultipartFile defaultFile = fileService.convertToMultipartImage("tempImage.png"); // твій default
+            String defaultUrl = fileService.upload(defaultFile);
+            eventImages.add(EventImage.builder()
+                    .imagePath(defaultUrl)
+                    .isMain(true)
+                    .createdAt(LocalDateTime.now())
+                    .event(event)
+                    .build());
+        }
         event.setImages(eventImages);
 
         Event saved = eventRepo.save(event);
@@ -83,7 +97,6 @@ public class EventServiceImpl implements EventService {
                 .toList();
     }
 
-
     private EventDto mapToEventDto(Event event) {
         return EventDto.builder()
                 .id(event.getId())
@@ -91,7 +104,6 @@ public class EventServiceImpl implements EventService {
                 .description(event.getDescription())
                 .is_open(event.getIsOpen())
                 .created_at(event.getCreatedAt())
-                //.images(event.getImages().stream().map(EventImage::getImagePath).toList())
                 .build();
     }
 
