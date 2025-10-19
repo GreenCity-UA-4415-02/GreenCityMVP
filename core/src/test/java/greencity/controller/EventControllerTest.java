@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.DateLocationDto;
+import greencity.dto.event.EventDto;
 import greencity.dto.tag.TagUaEnDto;
 import greencity.service.EventService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.security.Principal;
@@ -107,6 +110,28 @@ class EventControllerTest {
                         .principal(principal)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated());
+
         verify(eventService).create(any(AddEventDtoRequest.class), anyList(), eq(principal.getName()));
+    }
+
+    @Test
+    void createEvent_shouldFail_whenInvalidRequest() throws Exception {
+        AddEventDtoRequest invalidRequest = AddEventDtoRequest.builder().build();
+        String requestJson = objectMapper.writeValueAsString(invalidRequest);
+
+        MockMultipartFile jsonFile = new MockMultipartFile(
+                "event",
+                "event.json",
+                MediaType.APPLICATION_JSON_VALUE,
+                requestJson.getBytes()
+        );
+
+        mockMvc.perform(multipart("/events/create")
+                        .file(jsonFile)
+                        .principal(principal)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isBadRequest());
+
+        verify(eventService, never()).create(any(), anyList(), anyString());
     }
 }
