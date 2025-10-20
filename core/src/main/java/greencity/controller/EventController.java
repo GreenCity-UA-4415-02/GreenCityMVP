@@ -43,5 +43,15 @@ public class EventController {
         List<EventDto> events = eventService.getVisibleEvents(principal.getName());
         return ResponseEntity.ok(events);
     }
-}
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Delete event by id")
+    public ResponseEntity<Void> deleteEvent(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Principal principal
+    ) {
+        eventService.deleteEvent(id, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
+}

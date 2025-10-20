@@ -2,7 +2,6 @@ package greencity.service;
 
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
-import greencity.dto.event.DateLocationDto;
 import greencity.dto.event.EventDto;
 import greencity.entity.*;
 import greencity.exception.exceptions.BadRequestException;
@@ -59,14 +58,14 @@ public class EventServiceImpl implements EventService {
                 String url = fileService.upload(file);
                 eventImages.add(EventImage.builder()
                         .imagePath(url)
-                        .isMain(first) // перше зображення головне
+                        .isMain(first)
                         .createdAt(LocalDateTime.now())
                         .event(event)
                         .build());
                 first = false;
             }
         } else {
-            MultipartFile defaultFile = fileService.convertToMultipartImage("tempImage.png"); // твій default
+            MultipartFile defaultFile = fileService.convertToMultipartImage("tempImage.png");
             String defaultUrl = fileService.upload(defaultFile);
             eventImages.add(EventImage.builder()
                     .imagePath(defaultUrl)
@@ -97,6 +96,19 @@ public class EventServiceImpl implements EventService {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public void deleteEvent(Long eventId, String userEmail) {
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        if (event.getImages() != null) {
+            event.getImages().forEach(img -> fileService.delete(img.getImagePath()));
+        }
+
+        eventRepo.delete(event);
+    }
+
     private EventDto mapToEventDto(Event event) {
         return EventDto.builder()
                 .id(event.getId())
@@ -104,6 +116,7 @@ public class EventServiceImpl implements EventService {
                 .description(event.getDescription())
                 .is_open(event.getIsOpen())
                 .created_at(event.getCreatedAt())
+                .updated_at(event.getUpdatedAt())
                 .build();
     }
 
