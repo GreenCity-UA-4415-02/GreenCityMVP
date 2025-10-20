@@ -28,14 +28,11 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,23 +53,24 @@ class HabitAssignControllerTest {
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(habitAssignController)
-                                      .setControllerAdvice(new CustomExceptionHandler(errorAttributes, objectMapper))
-                                      .setCustomArgumentResolvers(
-                                              new PageableHandlerMethodArgumentResolver(),
-                                              new CurrentUserHandler())
-                                      .build() ;
+            .setControllerAdvice(new CustomExceptionHandler(errorAttributes, objectMapper))
+            .setCustomArgumentResolvers(
+                new PageableHandlerMethodArgumentResolver(),
+                new CurrentUserHandler())
+            .build();
     }
 
     private static class CurrentUserHandler implements HandlerMethodArgumentResolver {
         @Override
         public boolean supportsParameter(@NotNull MethodParameter parameter) {
             return parameter.hasParameterAnnotation(CurrentUser.class)
-                    && UserVO.class.isAssignableFrom(parameter.getParameterType());
+                && UserVO.class.isAssignableFrom(parameter.getParameterType());
 
         }
 
         @Override
-        public Object resolveArgument(@NotNull MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+        public Object resolveArgument(@NotNull MethodParameter parameter, ModelAndViewContainer mavContainer,
+            NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
             UserVO userVO = new UserVO();
             userVO.setId(1L);
             userVO.setEmail("test@gmail.com");
@@ -87,32 +85,33 @@ class HabitAssignControllerTest {
             throw new RuntimeException(e);
         }
     }
+
     @Test
     @DisplayName("Test assignDefaultHabit should return 201 Created")
     void assignDefaultHabit_returnsCreated() throws Exception {
-            Long habitId = 1L;
-            UserVO userVO = new UserVO();
-            userVO.setId(1L);
-            userVO.setEmail("test@gmail.com");
+        Long habitId = 1L;
+        UserVO userVO = new UserVO();
+        userVO.setId(1L);
+        userVO.setEmail("test@gmail.com");
 
-            HabitAssignManagementDto expectedDto = HabitAssignManagementDto.builder()
-                                                                           .id(10L)
-                                                                           .habitId(habitId)
-                                                                           .status(HabitAssignStatus.INPROGRESS)
-                                                                           .build();
+        HabitAssignManagementDto expectedDto = HabitAssignManagementDto.builder()
+            .id(10L)
+            .habitId(habitId)
+            .status(HabitAssignStatus.INPROGRESS)
+            .build();
 
-            when(habitAssignService.assignDefaultHabitForUser(habitId, userVO))
-                    .thenReturn(expectedDto);
+        when(habitAssignService.assignDefaultHabitForUser(habitId, userVO))
+            .thenReturn(expectedDto);
 
-            mockMvc.perform(post("/habit/assign/{habitId}", habitId)
-                           .contentType(MediaType.APPLICATION_JSON)
-                           .accept(MediaType.APPLICATION_JSON))
-                   .andExpect(status().isCreated())
-                   .andExpect(jsonPath("$.id").value(expectedDto.getId()))
-                   .andExpect(jsonPath("$.habitId").value(habitId))
-                   .andExpect(jsonPath("$.status").value("INPROGRESS"));
+        mockMvc.perform(post("/habit/assign/{habitId}", habitId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(expectedDto.getId()))
+            .andExpect(jsonPath("$.habitId").value(habitId))
+            .andExpect(jsonPath("$.status").value("INPROGRESS"));
 
-            verify(habitAssignService).assignDefaultHabitForUser(habitId, userVO);
+        verify(habitAssignService).assignDefaultHabitForUser(habitId, userVO);
     }
 
     @Test
@@ -124,14 +123,15 @@ class HabitAssignControllerTest {
         userVO.setEmail("test@gmail.com");
 
         when(habitAssignService.assignDefaultHabitForUser(nonExistentHabitId, userVO))
-                .thenThrow(new NotFoundException("Habit with id " + nonExistentHabitId + " not found."));
+            .thenThrow(new NotFoundException("Habit with id " + nonExistentHabitId + " not found."));
 
         mockMvc.perform(post("/habit/assign/{habitId}", nonExistentHabitId)
-                       .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotFound());
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
 
         verify(habitAssignService).assignDefaultHabitForUser(nonExistentHabitId, userVO);
     }
+
     @Test
     @DisplayName("Test assignCustomHabit should return 201 Created on success")
     void assignCustomHabit_returnsCreated() throws Exception {
@@ -139,29 +139,30 @@ class HabitAssignControllerTest {
 
         Long newHabitId = 2L;
         HabitAssignManagementDto expectedDto = HabitAssignManagementDto.builder()
-                                                                       .id(11L)
-                                                                       .habitId(newHabitId)
-                                                                       .status(HabitAssignStatus.INPROGRESS)
-                                                                       .build();
+            .id(11L)
+            .habitId(newHabitId)
+            .status(HabitAssignStatus.INPROGRESS)
+            .build();
 
         UserVO userVO = new UserVO();
         userVO.setId(1L);
         userVO.setEmail("test@gmail.com");
 
-        when(habitAssignService.assignCustomHabitForUser(newHabitId,userVO,requestDto))
-                .thenReturn(Collections.singletonList(expectedDto));
+        when(habitAssignService.assignCustomHabitForUser(newHabitId, userVO, requestDto))
+            .thenReturn(Collections.singletonList(expectedDto));
 
         mockMvc.perform(post("/habit/assign/{habitId}/custom", newHabitId)
-                       .content(asJsonString(requestDto))
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isCreated())
-               .andExpect(jsonPath("$[0].id").value(expectedDto.getId()))
-               .andExpect(jsonPath("$[0].habitId").value(newHabitId))
-               .andExpect(jsonPath("$[0].status").value("INPROGRESS"));
+            .content(asJsonString(requestDto))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$[0].id").value(expectedDto.getId()))
+            .andExpect(jsonPath("$[0].habitId").value(newHabitId))
+            .andExpect(jsonPath("$[0].status").value("INPROGRESS"));
 
-        verify(habitAssignService).assignCustomHabitForUser(newHabitId,userVO,requestDto);
+        verify(habitAssignService).assignCustomHabitForUser(newHabitId, userVO, requestDto);
     }
+
     @Test
     @DisplayName("Test assignCustomHabit should return 404 Not Found when habit not exists")
     void assignCustomHabit_throwsNotFoundException() throws Exception {
@@ -172,13 +173,13 @@ class HabitAssignControllerTest {
         userVO.setEmail("test@gmail.com");
 
         when(habitAssignService.assignCustomHabitForUser(nonExistentHabitId, userVO, requestDto))
-                .thenThrow(new NotFoundException("Habit with id " + nonExistentHabitId + " not found."));
+            .thenThrow(new NotFoundException("Habit with id " + nonExistentHabitId + " not found."));
 
         mockMvc.perform(post("/habit/assign/{habitId}/custom", nonExistentHabitId)
-                       .content(asJsonString(requestDto))
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotFound());
+            .content(asJsonString(requestDto))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
 
         verify(habitAssignService).assignCustomHabitForUser(nonExistentHabitId, userVO, requestDto);
     }
@@ -192,12 +193,13 @@ class HabitAssignControllerTest {
         userVO.setEmail("test@gmail.com");
 
         when(habitAssignService.assignDefaultHabitForUser(assignedHabitId, userVO))
-                .thenThrow(new UserAlreadyHasHabitAssignedException("User already has assigned habit with id: " + assignedHabitId));
+            .thenThrow(new UserAlreadyHasHabitAssignedException(
+                "User already has assigned habit with id: " + assignedHabitId));
 
         mockMvc.perform(post("/habit/assign/{habitId}", assignedHabitId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
 
         verify(habitAssignService).assignDefaultHabitForUser(assignedHabitId, userVO);
     }
@@ -212,13 +214,14 @@ class HabitAssignControllerTest {
         userVO.setEmail("test@gmail.com");
 
         when(habitAssignService.assignCustomHabitForUser(assignedHabitId, userVO, requestDto))
-                .thenThrow(new UserAlreadyHasHabitAssignedException("User already has assigned habit with id: " + assignedHabitId));
+            .thenThrow(new UserAlreadyHasHabitAssignedException(
+                "User already has assigned habit with id: " + assignedHabitId));
 
         mockMvc.perform(post("/habit/assign/{habitId}/custom", assignedHabitId)
-                       .content(asJsonString(requestDto))
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
+            .content(asJsonString(requestDto))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
 
         verify(habitAssignService).assignCustomHabitForUser(assignedHabitId, userVO, requestDto);
     }
@@ -231,21 +234,21 @@ class HabitAssignControllerTest {
         testUserVO.setEmail("test@gmail.com");
         Long habitAssignId = 100L;
         HabitAssignDto expectedDto = HabitAssignDto.builder()
-                                                   .id(habitAssignId)
-                                                   .status(HabitAssignStatus.INPROGRESS)
-                                                   .createDateTime(ZonedDateTime.now())
-                                                   .build();
+            .id(habitAssignId)
+            .status(HabitAssignStatus.INPROGRESS)
+            .createDateTime(ZonedDateTime.now())
+            .build();
 
         when(habitAssignService.getByHabitAssignIdAndUserId(habitAssignId, testUserVO.getId(), "en"))
-                .thenReturn(expectedDto);
+            .thenReturn(expectedDto);
 
         mockMvc.perform(get("/habit/assign/{habitAssignId}", habitAssignId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON)
-                       .locale(Locale.ENGLISH))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.id").value(habitAssignId))
-               .andExpect(jsonPath("$.status").value("INPROGRESS"));
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .locale(Locale.ENGLISH))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(habitAssignId))
+            .andExpect(jsonPath("$.status").value("INPROGRESS"));
 
         verify(habitAssignService).getByHabitAssignIdAndUserId(habitAssignId, testUserVO.getId(), "en");
     }
@@ -259,12 +262,12 @@ class HabitAssignControllerTest {
         Long nonExistentAssignId = 999L;
 
         when(habitAssignService.getByHabitAssignIdAndUserId(nonExistentAssignId, testUserVO.getId(), "en"))
-                .thenThrow(new NotFoundException("Habit assignment not found for this user."));
+            .thenThrow(new NotFoundException("Habit assignment not found for this user."));
 
         mockMvc.perform(get("/habit/assign/{habitAssignId}", nonExistentAssignId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotFound());
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
 
         verify(habitAssignService).getByHabitAssignIdAndUserId(nonExistentAssignId, testUserVO.getId(), "en");
     }
@@ -275,24 +278,25 @@ class HabitAssignControllerTest {
         Long assignId = 101L;
 
         HabitAssignStatDto requestDto = HabitAssignStatDto.builder()
-                                                          .status(HabitAssignStatus.ACQUIRED)
-                                                          .build();
+            .status(HabitAssignStatus.ACQUIRED)
+            .build();
 
         HabitAssignManagementDto responseDto = HabitAssignManagementDto.builder()
-                                                                       .id(assignId)
-                                                                       .habitId(5L) // Приклад
-                                                                       .status(HabitAssignStatus.ACQUIRED)
-                                                                       .build();
+            .id(assignId)
+            .habitId(5L) // Приклад
+            .status(HabitAssignStatus.ACQUIRED)
+            .build();
 
-        when(habitAssignService.updateStatusByHabitAssignId(eq(assignId), any(HabitAssignStatDto.class))).thenReturn(responseDto);
+        when(habitAssignService.updateStatusByHabitAssignId(eq(assignId), any(HabitAssignStatDto.class)))
+            .thenReturn(responseDto);
 
         mockMvc.perform(patch("/habit/assign/{habitAssignId}", assignId)
-                       .content(asJsonString(requestDto)) // Надсилаємо JSON-тіло
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.id").value(assignId))
-               .andExpect(jsonPath("$.status").value("ACQUIRED"));
+            .content(asJsonString(requestDto)) // Надсилаємо JSON-тіло
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(assignId))
+            .andExpect(jsonPath("$.status").value("ACQUIRED"));
 
         verify(habitAssignService).updateStatusByHabitAssignId(eq(assignId), any(HabitAssignStatDto.class));
     }
@@ -302,16 +306,16 @@ class HabitAssignControllerTest {
     void updateAssignByHabitId_throwsNotFoundException() throws Exception {
         Long nonExistentAssignId = 999L;
         HabitAssignStatDto requestDto = HabitAssignStatDto.builder()
-                                                          .status(HabitAssignStatus.ACQUIRED)
-                                                          .build();
+            .status(HabitAssignStatus.ACQUIRED)
+            .build();
 
         when(habitAssignService.updateStatusByHabitAssignId(eq(nonExistentAssignId), any(HabitAssignStatDto.class)))
-                .thenThrow(new NotFoundException("Habit assignment not found."));
+            .thenThrow(new NotFoundException("Habit assignment not found."));
 
         mockMvc.perform(patch("/habit/assign/{habitAssignId}", nonExistentAssignId)
-                       .content(asJsonString(requestDto))
-                       .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotFound());
+            .content(asJsonString(requestDto))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
 
         verify(habitAssignService).updateStatusByHabitAssignId(eq(nonExistentAssignId), any(HabitAssignStatDto.class));
     }
@@ -327,9 +331,9 @@ class HabitAssignControllerTest {
         doNothing().when(habitAssignService).deleteHabitAssign(assignId, testUserVO.getId());
 
         mockMvc.perform(delete("/habit/assign/delete/{habitAssignId}", assignId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
 
         verify(habitAssignService).deleteHabitAssign(assignId, testUserVO.getId());
     }
@@ -344,20 +348,21 @@ class HabitAssignControllerTest {
         Integer duration = 50;
 
         HabitAssignUserDurationDto exceptedDto = HabitAssignUserDurationDto.builder()
-                                                                           .userId(testUserVO.getId())
-                                                                           .habitId(assignId)
-                                                                           .duration(duration)
-                                                                           .build();
+            .userId(testUserVO.getId())
+            .habitId(assignId)
+            .duration(duration)
+            .build();
 
-        when(habitAssignService.updateUserHabitInfoDuration(assignId,testUserVO.getId(),duration)).thenReturn(exceptedDto);
+        when(habitAssignService.updateUserHabitInfoDuration(assignId, testUserVO.getId(), duration))
+            .thenReturn(exceptedDto);
 
         mockMvc.perform(put("/habit/assign/{habitAssignId}/update-habit-duration", assignId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON)
-                       .param("duration", String.valueOf(duration)))
-               .andExpect(status().isOk());
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .param("duration", String.valueOf(duration)))
+            .andExpect(status().isOk());
 
-        verify(habitAssignService).updateUserHabitInfoDuration(assignId,testUserVO.getId(),duration);
+        verify(habitAssignService).updateUserHabitInfoDuration(assignId, testUserVO.getId(), duration);
     }
 
     @Test
@@ -369,15 +374,16 @@ class HabitAssignControllerTest {
         Long assignId = 999L;
         Integer duration = 50;
 
-        when(habitAssignService.updateUserHabitInfoDuration(assignId,testUserVO.getId(),duration)).thenThrow(new NotFoundException("Habit assignment not found."));
+        when(habitAssignService.updateUserHabitInfoDuration(assignId, testUserVO.getId(), duration))
+            .thenThrow(new NotFoundException("Habit assignment not found."));
 
         mockMvc.perform(put("/habit/assign/{habitAssignId}/update-habit-duration", assignId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON)
-                       .param("duration", String.valueOf(duration)))
-               .andExpect(status().isNotFound());
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .param("duration", String.valueOf(duration)))
+            .andExpect(status().isNotFound());
 
-        verify(habitAssignService).updateUserHabitInfoDuration(assignId,testUserVO.getId(),duration);
+        verify(habitAssignService).updateUserHabitInfoDuration(assignId, testUserVO.getId(), duration);
     }
 
     @Test
@@ -388,22 +394,22 @@ class HabitAssignControllerTest {
         testUserVO.setEmail("test@gmail.com");
 
         List<HabitAssignDto> exceptedDtoList = List.of(
-                HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build(),
-                HabitAssignDto.builder().id(2L).status(HabitAssignStatus.INPROGRESS).build()
-        );
+            HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build(),
+            HabitAssignDto.builder().id(2L).status(HabitAssignStatus.INPROGRESS).build());
 
-        when(habitAssignService.getAllHabitAssignsByUserIdAndStatusNotCancelled(testUserVO.getId(),"en")).thenReturn(exceptedDtoList);
+        when(habitAssignService.getAllHabitAssignsByUserIdAndStatusNotCancelled(testUserVO.getId(), "en"))
+            .thenReturn(exceptedDtoList);
 
         mockMvc.perform(get("/habit/assign/allForCurrentUser")
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$.length()").value(2))
-               .andExpect(jsonPath("$[0].id").value(1L))
-               .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
-        verify(habitAssignService).getAllHabitAssignsByUserIdAndStatusNotCancelled(testUserVO.getId(),"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(1L))
+            .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
+        verify(habitAssignService).getAllHabitAssignsByUserIdAndStatusNotCancelled(testUserVO.getId(), "en");
     }
 
     @Test
@@ -416,15 +422,16 @@ class HabitAssignControllerTest {
 
         UserShoppingAndCustomShoppingListsDto exceptedDto = UserShoppingAndCustomShoppingListsDto.builder().build();
 
-        when(habitAssignService.getUserShoppingAndCustomShoppingLists(testUserVO.getId(),habitId,"en")).thenReturn(exceptedDto);
+        when(habitAssignService.getUserShoppingAndCustomShoppingLists(testUserVO.getId(), habitId, "en"))
+            .thenReturn(exceptedDto);
 
         mockMvc.perform(get("/habit/assign/{habitAssignId}/allUserAndCustomList", habitId)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").exists());
-        verify(habitAssignService).getUserShoppingAndCustomShoppingLists(testUserVO.getId(),habitId,"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").exists());
+        verify(habitAssignService).getUserShoppingAndCustomShoppingLists(testUserVO.getId(), habitId, "en");
     }
 
     @Test
@@ -435,27 +442,27 @@ class HabitAssignControllerTest {
         testUserVO.setEmail("test@gmail.com");
         Long habitId = 102L;
         UserShoppingAndCustomShoppingListsDto listsDto = UserShoppingAndCustomShoppingListsDto.builder()
-                                                                                              .customShoppingListItemDto(Collections.emptyList())
-                                                                                              .userShoppingListItemDto(Collections.emptyList())
-                                                                                              .build();
+            .customShoppingListItemDto(Collections.emptyList())
+            .userShoppingListItemDto(Collections.emptyList())
+            .build();
 
         doNothing().when(habitAssignService).fullUpdateUserAndCustomShoppingLists(
-                eq(testUserVO.getId()),
-                eq(habitId),
-                any(UserShoppingAndCustomShoppingListsDto.class),
-                eq("en"));
+            eq(testUserVO.getId()),
+            eq(habitId),
+            any(UserShoppingAndCustomShoppingListsDto.class),
+            eq("en"));
 
         mockMvc.perform(put("/habit/assign/{habitAssignId}/allUserAndCustomList", habitId)
-                       .locale(Locale.ENGLISH)
-                       .content(asJsonString(listsDto))
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
+            .locale(Locale.ENGLISH)
+            .content(asJsonString(listsDto))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
         verify(habitAssignService).fullUpdateUserAndCustomShoppingLists(
-                eq(testUserVO.getId()),
-                eq(habitId),
-                any(UserShoppingAndCustomShoppingListsDto.class),
-                eq("en"));
+            eq(testUserVO.getId()),
+            eq(habitId),
+            any(UserShoppingAndCustomShoppingListsDto.class),
+            eq("en"));
     }
 
     @Test
@@ -466,22 +473,22 @@ class HabitAssignControllerTest {
         testUserVO.setEmail("test@gmail.com");
 
         List<UserShoppingAndCustomShoppingListsDto> exceptedListDto = List.of(
-                UserShoppingAndCustomShoppingListsDto.builder()
-                                                     .userShoppingListItemDto(Collections.emptyList())
-                                                     .customShoppingListItemDto(Collections.emptyList())
-                                                     .build()
-        );
+            UserShoppingAndCustomShoppingListsDto.builder()
+                .userShoppingListItemDto(Collections.emptyList())
+                .customShoppingListItemDto(Collections.emptyList())
+                .build());
 
-        when(habitAssignService.getListOfUserAndCustomShoppingListsWithStatusInprogress(testUserVO.getId(),"en")).thenReturn(exceptedListDto);
+        when(habitAssignService.getListOfUserAndCustomShoppingListsWithStatusInprogress(testUserVO.getId(), "en"))
+            .thenReturn(exceptedListDto);
 
         mockMvc.perform(get("/habit/assign/allUserAndCustomShoppingListsInprogress")
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$.length()").value(1));
-        verify(habitAssignService).getListOfUserAndCustomShoppingListsWithStatusInprogress(testUserVO.getId(),"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(1));
+        verify(habitAssignService).getListOfUserAndCustomShoppingListsWithStatusInprogress(testUserVO.getId(), "en");
     }
 
     @Test
@@ -490,22 +497,22 @@ class HabitAssignControllerTest {
         Long habitId = 102L;
 
         List<HabitAssignDto> exceptedListDto = List.of(
-                HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build(),
-                HabitAssignDto.builder().id(2L).status(HabitAssignStatus.INPROGRESS).build()
-        );
+            HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build(),
+            HabitAssignDto.builder().id(2L).status(HabitAssignStatus.INPROGRESS).build());
 
-        when(habitAssignService.getAllHabitAssignsByHabitIdAndStatusNotCancelled(habitId,"en")).thenReturn(exceptedListDto);
+        when(habitAssignService.getAllHabitAssignsByHabitIdAndStatusNotCancelled(habitId, "en"))
+            .thenReturn(exceptedListDto);
 
         mockMvc.perform(get("/habit/assign/{habitId}/all", habitId)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$.length()").value(2))
-               .andExpect(jsonPath("$[0].id").value(1L))
-               .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
-        verify(habitAssignService).getAllHabitAssignsByHabitIdAndStatusNotCancelled(habitId,"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(1L))
+            .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
+        verify(habitAssignService).getAllHabitAssignsByHabitIdAndStatusNotCancelled(habitId, "en");
     }
 
     @Test
@@ -518,14 +525,15 @@ class HabitAssignControllerTest {
 
         HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build();
 
-        when(habitAssignService.findHabitAssignByUserIdAndHabitId(testUserVO.getId(), habitId,"en")).thenReturn(exceptedDto);
+        when(habitAssignService.findHabitAssignByUserIdAndHabitId(testUserVO.getId(), habitId, "en"))
+            .thenReturn(exceptedDto);
 
         mockMvc.perform(get("/habit/assign/{habitId}/active", habitId)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
-        verify(habitAssignService).findHabitAssignByUserIdAndHabitId(testUserVO.getId(),habitId,"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(habitAssignService).findHabitAssignByUserIdAndHabitId(testUserVO.getId(), habitId, "en");
     }
 
     @Test
@@ -538,14 +546,15 @@ class HabitAssignControllerTest {
 
         HabitDto exceptedDto = HabitDto.builder().id(1L).build();
 
-        when(habitAssignService.findHabitByUserIdAndHabitAssignId(testUserVO.getId(),habitAssignId,"en")).thenReturn(exceptedDto);
+        when(habitAssignService.findHabitByUserIdAndHabitAssignId(testUserVO.getId(), habitAssignId, "en"))
+            .thenReturn(exceptedDto);
 
         mockMvc.perform(get("/habit/assign/{habitAssignId}/more", habitAssignId)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
-        verify(habitAssignService).findHabitByUserIdAndHabitAssignId(testUserVO.getId(),habitAssignId,"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(habitAssignService).findHabitByUserIdAndHabitAssignId(testUserVO.getId(), habitAssignId, "en");
     }
 
     @Test
@@ -559,14 +568,14 @@ class HabitAssignControllerTest {
 
         HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build();
 
-        when(habitAssignService.enrollHabit(habitAssignId,testUserVO.getId(), date, "en")).thenReturn(exceptedDto);
+        when(habitAssignService.enrollHabit(habitAssignId, testUserVO.getId(), date, "en")).thenReturn(exceptedDto);
 
         mockMvc.perform(post("/habit/assign/{habitAssignId}/enroll/{date}", habitAssignId, date)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
-        verify(habitAssignService).enrollHabit(habitAssignId,testUserVO.getId(), date, "en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(habitAssignService).enrollHabit(habitAssignId, testUserVO.getId(), date, "en");
     }
 
     @Test
@@ -580,14 +589,14 @@ class HabitAssignControllerTest {
 
         HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).build();
 
-        when(habitAssignService.unenrollHabit(habitAssignId,testUserVO.getId(),date)).thenReturn(exceptedDto);
+        when(habitAssignService.unenrollHabit(habitAssignId, testUserVO.getId(), date)).thenReturn(exceptedDto);
 
         mockMvc.perform(post("/habit/assign/{habitAssignId}/unenroll/{date}", habitAssignId, date)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
-        verify(habitAssignService).unenrollHabit(habitAssignId,testUserVO.getId(), date);
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(habitAssignService).unenrollHabit(habitAssignId, testUserVO.getId(), date);
     }
 
     @Test
@@ -599,22 +608,22 @@ class HabitAssignControllerTest {
         LocalDate date = LocalDate.now();
 
         List<HabitAssignDto> exceptedDto = List.of(
-                HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build(),
-                HabitAssignDto.builder().id(2L).status(HabitAssignStatus.INPROGRESS).build()
-        );
+            HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build(),
+            HabitAssignDto.builder().id(2L).status(HabitAssignStatus.INPROGRESS).build());
 
-        when(habitAssignService.findInprogressHabitAssignsOnDate(testUserVO.getId(),date,"en")).thenReturn(exceptedDto);
+        when(habitAssignService.findInprogressHabitAssignsOnDate(testUserVO.getId(), date, "en"))
+            .thenReturn(exceptedDto);
 
         mockMvc.perform(get("/habit/assign/active/{date}", date)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$.length()").value(2))
-               .andExpect(jsonPath("$[0].id").value(1L))
-               .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
-        verify(habitAssignService).findInprogressHabitAssignsOnDate(testUserVO.getId(),date,"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(1L))
+            .andExpect(jsonPath("$[1].status").value("INPROGRESS"));
+        verify(habitAssignService).findInprogressHabitAssignsOnDate(testUserVO.getId(), date, "en");
     }
 
     @Test
@@ -627,19 +636,19 @@ class HabitAssignControllerTest {
         LocalDate to = LocalDate.now().plusDays(1);
 
         List<HabitsDateEnrollmentDto> exceptedListDto = List.of(
-                HabitsDateEnrollmentDto.builder().habitAssigns(Collections.emptyList()).build()
-        );
+            HabitsDateEnrollmentDto.builder().habitAssigns(Collections.emptyList()).build());
 
-        when(habitAssignService.findHabitAssignsBetweenDates(testUserVO.getId(),from,to,"en")).thenReturn(exceptedListDto);
+        when(habitAssignService.findHabitAssignsBetweenDates(testUserVO.getId(), from, to, "en"))
+            .thenReturn(exceptedListDto);
 
         mockMvc.perform(get("/habit/assign/activity/{from}/to/{to}", from, to)
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$.length()").value(1));
-        verify(habitAssignService).findHabitAssignsBetweenDates(testUserVO.getId(),from,to,"en");
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(1));
+        verify(habitAssignService).findHabitAssignsBetweenDates(testUserVO.getId(), from, to, "en");
     }
 
     @Test
@@ -652,29 +661,29 @@ class HabitAssignControllerTest {
 
         HabitAssignDto exceptedDto = HabitAssignDto.builder().id(1L).status(HabitAssignStatus.ACQUIRED).build();
 
-        when(habitAssignService.cancelHabitAssign(habitId,testUserVO.getId())).thenReturn(exceptedDto);
+        when(habitAssignService.cancelHabitAssign(habitId, testUserVO.getId())).thenReturn(exceptedDto);
 
         mockMvc.perform(patch("/habit/assign/cancel/{habitId}", habitId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
-        verify(habitAssignService).cancelHabitAssign(habitId,testUserVO.getId());
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(habitAssignService).cancelHabitAssign(habitId, testUserVO.getId());
     }
 
     @Test
     @DisplayName("Test updateShoppingListStatus should return 200 OK")
     void updateShoppingListStatus200() throws Exception {
         UpdateUserShoppingListDto mockDto = UpdateUserShoppingListDto.builder()
-                                                                     .habitAssignId(102L)
-                                                                     .build();
+            .habitAssignId(102L)
+            .build();
 
         doNothing().when(habitAssignService).updateUserShoppingListItem(any(UpdateUserShoppingListDto.class));
 
         mockMvc.perform(put("/habit/assign/saveShoppingListForHabitAssign")
-                       .content(asJsonString(mockDto))
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
+            .content(asJsonString(mockDto))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
         verify(habitAssignService).updateUserShoppingListItem(any(UpdateUserShoppingListDto.class));
     }
 
@@ -686,12 +695,12 @@ class HabitAssignControllerTest {
         testUserVO.setEmail("test@gmail.com");
         Long habitId = 102L;
 
-        doNothing().when(habitAssignService).updateProgressNotificationHasDisplayed(habitId,testUserVO.getId());
+        doNothing().when(habitAssignService).updateProgressNotificationHasDisplayed(habitId, testUserVO.getId());
 
         mockMvc.perform(put("/habit/assign/{habitAssignId}/updateProgressNotificationHasDisplayed", habitId)
-                       .contentType(MediaType.APPLICATION_JSON)
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk());
-        verify(habitAssignService).updateProgressNotificationHasDisplayed(habitId,testUserVO.getId());
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(habitAssignService).updateProgressNotificationHasDisplayed(habitId, testUserVO.getId());
     }
 }

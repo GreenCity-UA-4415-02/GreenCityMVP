@@ -25,17 +25,17 @@ class ShoppingListItemResponseDtoMapperTest {
         ShoppingListItem entity = ModelUtils.getShoppingListItem();
 
         ShoppingListItemResponseDto expected = ShoppingListItemResponseDto.builder()
-                .id(1L)
-                .translations(List.of(
-                        ShoppingListItemTranslationDTO.builder()
-                                .id(2L)
-                                .content("Buy a bamboo toothbrush")
-                                .build(),
-                        ShoppingListItemTranslationDTO.builder()
-                                .id(11L)
-                                .content("Start recycling batteries")
-                                .build()))
-                .build();
+            .id(1L)
+            .translations(List.of(
+                ShoppingListItemTranslationDTO.builder()
+                    .id(2L)
+                    .content("Buy a bamboo toothbrush")
+                    .build(),
+                ShoppingListItemTranslationDTO.builder()
+                    .id(11L)
+                    .content("Start recycling batteries")
+                    .build()))
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

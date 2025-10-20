@@ -8,10 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -23,20 +20,20 @@ class HabitTranslationDtoMapperTest {
     @DisplayName("convert: HabitTranslation -> HabitTranslationDto")
     void convert_ok() {
         HabitTranslation entity = HabitTranslation.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .language(Language.builder()
-                        .code("ua")
-                        .build())
-                .build();
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .language(Language.builder()
+                .code("ua")
+                .build())
+            .build();
 
         HabitTranslationDto expected = HabitTranslationDto.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .languageCode("ua")
-                .build();
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .languageCode("ua")
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }
@@ -52,20 +49,20 @@ class HabitTranslationDtoMapperTest {
     @DisplayName("convert: HabitTranslation -> HabitTranslationDto")
     void convert_mapAllToList_ok() {
         List<HabitTranslation> entity = List.of(HabitTranslation.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .language(Language.builder()
-                        .code("ua")
-                        .build())
-                .build());
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .language(Language.builder()
+                .code("ua")
+                .build())
+            .build());
 
         List<HabitTranslationDto> expected = List.of(HabitTranslationDto.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .languageCode("ua")
-                .build());
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .languageCode("ua")
+            .build());
 
         assertEquals(expected, mapper.mapAllToList(entity));
     }

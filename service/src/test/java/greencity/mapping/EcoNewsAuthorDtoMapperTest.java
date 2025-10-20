@@ -24,9 +24,9 @@ class EcoNewsAuthorDtoMapperTest {
         User user = ModelUtils.getUser();
 
         EcoNewsAuthorDto expected = EcoNewsAuthorDto.builder()
-                .id(1L)
-                .name(TestConst.NAME)
-                .build();
+            .id(1L)
+            .name(TestConst.NAME)
+            .build();
 
         assertEquals(expected, mapper.convert(user));
     }

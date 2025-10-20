@@ -7,15 +7,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO representing the result of a subscription attempt for the POST /api/newsletter/subscribe endpoint.
- * Structure: { "ok": true, "alreadySubscribed": false/true }
+ * DTO representing the result of a subscription attempt for the POST
+ * /api/newsletter/subscribe endpoint. Structure: { "ok": true,
+ * "alreadySubscribed": false/true }
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SubscribeResultDto {
-
     /**
      * Indicates if the operation was successful (always true for HTTP 200/201).
      */

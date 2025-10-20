@@ -129,7 +129,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).equal(numericPath, 123L);
     }
@@ -144,7 +144,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).disjunction();
     }
@@ -159,7 +159,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).equal(numericPath, 5);
     }
@@ -174,7 +174,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).equal(numericPath, 100.5);
     }
@@ -191,7 +191,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).equal(enumPath, RatingCalculationEnum.ADD_COMMENT);
         verify(criteriaBuilder).equal(enumPath, RatingCalculationEnum.DELETE_COMMENT);
@@ -205,7 +205,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).disjunction();
     }
@@ -219,7 +219,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).equal(userIdPath, 42L);
         verify(root).join(RatingStatistics_.user);
@@ -235,7 +235,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).disjunction();
     }
@@ -247,12 +247,13 @@ class RatingStatisticsSpecificationTest {
         String[] dates = {"2023-01-01", "2023-12-31"};
         SearchCriteria c = SearchCriteria.builder().type("dateRange").key("createdAt").value(dates).build();
         when(root.get("createdAt")).thenReturn(datePath);
-        when(criteriaBuilder.between(any(Expression.class), any(Comparable.class), any(Comparable.class))).thenReturn(predicateDateRange);
+        when(criteriaBuilder.between(any(Expression.class), any(Comparable.class), any(Comparable.class)))
+            .thenReturn(predicateDateRange);
         when(criteriaBuilder.and(any(), any())).thenReturn(predicateAnd1);
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd1, result);
         verify(criteriaBuilder).between(any(Expression.class), any(Comparable.class), any(Comparable.class));
     }
@@ -262,13 +263,14 @@ class RatingStatisticsSpecificationTest {
         String[] dates = {"invalid-date", "2023-12-31"};
         SearchCriteria c = SearchCriteria.builder().type("dateRange").key("createdAt").value(dates).build();
         when(root.get("createdAt")).thenReturn(datePath);
-        when(criteriaBuilder.between(any(Expression.class), any(Comparable.class), any(Comparable.class))).thenThrow(new RuntimeException());
+        when(criteriaBuilder.between(any(Expression.class), any(Comparable.class), any(Comparable.class)))
+            .thenThrow(new RuntimeException());
         when(criteriaBuilder.conjunction()).thenReturn(predicateTrue);
         when(criteriaBuilder.and(any(), any())).thenReturn(predicateTrue);
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(List.of(c));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateTrue, result);
         verify(criteriaBuilder).conjunction();
     }
@@ -288,7 +290,7 @@ class RatingStatisticsSpecificationTest {
 
         RatingStatisticsSpecification spec = new RatingStatisticsSpecification(Arrays.asList(userId, mail, id));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
-        
+
         assertSame(predicateAnd3, result);
         verify(criteriaBuilder, atLeast(2)).and(any(), any());
     }

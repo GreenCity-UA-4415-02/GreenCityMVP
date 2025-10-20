@@ -22,10 +22,10 @@ class NewTagDtoMapperTest {
         Tag entity = ModelUtils.getTag();
 
         NewTagDto expected = NewTagDto.builder()
-                .id(1L)
-                .name("News")
-                .nameUa("Новини")
-                .build();
+            .id(1L)
+            .name("News")
+            .nameUa("Новини")
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

@@ -24,10 +24,10 @@ class FilterDtoRequestMapperTest {
         UserFilterDtoRequest dto = ModelUtils.getUserFilterDtoRequest();
 
         Filter expected = Filter.builder()
-                .name("Test_Filter")
-                .type(FilterType.USERS.toString())
-                .values("Test;USER;ACTIVATED")
-                .build();
+            .name("Test_Filter")
+            .type(FilterType.USERS.toString())
+            .values("Test;USER;ACTIVATED")
+            .build();
 
         assertEquals(expected, mapper.convert(dto));
     }

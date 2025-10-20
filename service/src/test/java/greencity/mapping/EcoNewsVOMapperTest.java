@@ -64,19 +64,17 @@ class EcoNewsVOMapperTest {
         var voTag = vo.getTags().get(0);
         assertNotNull(voTag.getTagTranslations());
         assertTrue(voTag.getTagTranslations().stream()
-                .anyMatch(t -> "ua".equals(t.getLanguageVO().getCode())));
+            .anyMatch(t -> "ua".equals(t.getLanguageVO().getCode())));
         assertTrue(voTag.getTagTranslations().stream()
-                .anyMatch(t -> "en".equals(t.getLanguageVO().getCode())));
+            .anyMatch(t -> "en".equals(t.getLanguageVO().getCode())));
 
         // likes / dislikes
         assertEquals(
-                entity.getUsersLikedNews().stream().map(User::getId).collect(Collectors.toSet()),
-                vo.getUsersLikedNews().stream().map(UserVO::getId).collect(Collectors.toSet())
-        );
+            entity.getUsersLikedNews().stream().map(User::getId).collect(Collectors.toSet()),
+            vo.getUsersLikedNews().stream().map(UserVO::getId).collect(Collectors.toSet()));
         assertEquals(
-                entity.getUsersDislikedNews().stream().map(User::getId).collect(Collectors.toSet()),
-                vo.getUsersDislikedNews().stream().map(UserVO::getId).collect(Collectors.toSet())
-        );
+            entity.getUsersDislikedNews().stream().map(User::getId).collect(Collectors.toSet()),
+            vo.getUsersDislikedNews().stream().map(UserVO::getId).collect(Collectors.toSet()));
 
         // comments
         assertEquals(entity.getEcoNewsComments().size(), vo.getEcoNewsComments().size());

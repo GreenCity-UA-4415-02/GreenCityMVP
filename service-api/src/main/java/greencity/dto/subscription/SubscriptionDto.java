@@ -11,15 +11,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO to receive newsletter subscription data.
- * Used for an incoming POST request.
+ * DTO to receive newsletter subscription data. Used for an incoming POST
+ * request.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SubscriptionDto {
-
     /**
      * Subscriber's email.
      */
