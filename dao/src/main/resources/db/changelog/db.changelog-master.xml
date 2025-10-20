@@ -177,5 +177,6 @@
     <include file="db/changelog/logs/ch-drop-news-subscribers-table-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-user-friends-table-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-add-missing-events-to-the-events-tables.xml"/>
+    <include file="db/changelog/logs/add-organizer-to-events-Popov.xml"/>
 </databaseChangeLog>
 

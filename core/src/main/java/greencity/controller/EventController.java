@@ -3,6 +3,7 @@ package greencity.controller;
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.EventDto;
+import greencity.dto.event.UpdateEventDtoRequest;
 import greencity.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,4 +55,18 @@ public class EventController {
         eventService.deleteEvent(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping(value = "/{id}/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Edit existing event (organizer or admin only).")
+    public ResponseEntity<AddEventDtoResponse> updateEvent(
+            @PathVariable Long id,
+            @Valid @RequestPart("event") UpdateEventDtoRequest request,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @AuthenticationPrincipal Principal principal
+    ) {
+        AddEventDtoResponse response = eventService.update(id, request, images, principal.getName());
+        return ResponseEntity.ok(response);
+    }
+
 }

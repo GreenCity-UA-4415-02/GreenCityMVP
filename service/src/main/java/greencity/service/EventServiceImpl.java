@@ -3,7 +3,9 @@ package greencity.service;
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.EventDto;
+import greencity.dto.event.UpdateEventDtoRequest;
 import greencity.entity.*;
+import greencity.enums.Role;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.repository.EventRepo;
 import greencity.repository.UserRepo;
@@ -37,6 +39,7 @@ public class EventServiceImpl implements EventService {
                 .isOpen(request.getOpen())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .organizer(user)
                 .build();
 
         List<EventDateLocation> dateLocations = request.getDatesLocations().stream()
@@ -108,6 +111,92 @@ public class EventServiceImpl implements EventService {
 
         eventRepo.delete(event);
     }
+
+    @Override
+    @Transactional
+    public AddEventDtoResponse update(Long eventId, UpdateEventDtoRequest request, List<MultipartFile> images, String userEmail) {
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        User currentUser = userRepo.findByEmail(userEmail)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+
+        boolean isAdmin = currentUser.getRole().name().equalsIgnoreCase("ROLE_ADMIN");
+        boolean isOrganizer = event.getOrganizer() != null && event.getOrganizer().getEmail().equals(userEmail);
+
+
+        if (!(isAdmin || isOrganizer)) {
+            throw new BadRequestException("Only organizer or admin can edit event");
+        }
+
+        boolean hasFutureDates = event.getDateTimeLocations().stream()
+                .anyMatch(dl -> dl.getFinishDate().isAfter(LocalDateTime.now()));
+        if (!hasFutureDates) {
+            throw new BadRequestException("Past events cannot be edited");
+        }
+
+        validateRequest(new AddEventDtoRequest(
+                request.getTitle(),
+                request.getDescription(),
+                request.getOpen(),
+                request.getTags(),
+                request.getDatesLocations()
+        ), images);
+
+        event.setTitle(request.getTitle());
+        event.setDescription(request.getDescription());
+        event.setIsOpen(request.getOpen());
+        event.setUpdatedAt(LocalDateTime.now());
+
+        event.getDateTimeLocations().clear();
+        List<EventDateLocation> updatedDates = request.getDatesLocations().stream()
+                .map(dl -> EventDateLocation.builder()
+                        .startDate(dl.getStartDate())
+                        .finishDate(dl.getFinishDate())
+                        .latitude(dl.getLatitude())
+                        .longitude(dl.getLongitude())
+                        .onlineLink(dl.getOnlineLink())
+                        .event(event)
+                        .build())
+                .collect(Collectors.toList());
+        event.getDateTimeLocations().addAll(updatedDates);
+
+        // replace images if new ones provided
+        if (images != null && !images.isEmpty()) {
+            if (event.getImages() != null) {
+                event.getImages().forEach(img -> fileService.delete(img.getImagePath()));
+                event.getImages().clear();
+            }
+
+            boolean first = true;
+            List<EventImage> updatedImages = new ArrayList<>();
+            for (MultipartFile file : images) {
+                String url = fileService.upload(file);
+                updatedImages.add(EventImage.builder()
+                        .imagePath(url)
+                        .isMain(first)
+                        .createdAt(LocalDateTime.now())
+                        .event(event)
+                        .build());
+                first = false;
+            }
+            event.setImages(updatedImages);
+        }
+
+        Event saved = eventRepo.save(event);
+
+        return AddEventDtoResponse.builder()
+                .id(saved.getId())
+                .title(saved.getTitle())
+                .description(saved.getDescription())
+                .open(saved.getIsOpen())
+                .datesLocations(request.getDatesLocations())
+                .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
+                .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
+                .build();
+    }
+
 
     private EventDto mapToEventDto(Event event) {
         return EventDto.builder()
