@@ -41,9 +41,8 @@ public class Event {
 
     @ManyToMany
     @JoinTable(
-            name = "events_tags",
-            joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+        name = "events_tags",
+        joinColumns = @JoinColumn(name = "event_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tags;
 }

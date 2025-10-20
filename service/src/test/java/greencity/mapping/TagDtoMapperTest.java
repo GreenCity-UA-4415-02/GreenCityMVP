@@ -23,9 +23,9 @@ class TagDtoMapperTest {
     @DisplayName("convert: TagTranslation -> TagDto OK")
     void convert_ok() {
         TagTranslation entity = TagTranslation.builder()
-                .tag(getTag())
-                .name("News")
-                .build();
+            .tag(getTag())
+            .name("News")
+            .build();
 
         TagDto expected = ModelUtils.getTagDto().setId(1L);
 

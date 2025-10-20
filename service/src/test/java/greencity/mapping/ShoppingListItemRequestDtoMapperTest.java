@@ -21,13 +21,13 @@ class ShoppingListItemRequestDtoMapperTest {
     @DisplayName("convert: ShoppingListItemRequestDto -> UserShoppingListItem (ACTIVE)")
     void convert_ok() {
         ShoppingListItemRequestDto dto = ShoppingListItemRequestDto.builder()
-                .id(1L)
-                .build();
+            .id(1L)
+            .build();
 
         UserShoppingListItem expected = UserShoppingListItem.builder()
-                .shoppingListItem(ShoppingListItem.builder().id(1L).build())
-                .status(ShoppingListItemStatus.ACTIVE)
-                .build();
+            .shoppingListItem(ShoppingListItem.builder().id(1L).build())
+            .status(ShoppingListItemStatus.ACTIVE)
+            .build();
 
         assertEquals(expected, mapper.convert(dto));
     }

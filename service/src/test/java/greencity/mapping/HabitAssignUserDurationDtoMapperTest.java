@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith({SpringExtension.class})
 class HabitAssignUserDurationDtoMapperTest {
-@InjectMocks
+    @InjectMocks
     private HabitAssignUserDurationDtoMapper mapper;
 
     @Test
@@ -25,13 +25,13 @@ class HabitAssignUserDurationDtoMapperTest {
         HabitAssign entity = ModelUtils.getHabitAssign();
 
         HabitAssignUserDurationDto expected = HabitAssignUserDurationDto.builder()
-                .habitAssignId(1L)
-                .userId(1L)
-                .habitId(1L)
-                .status(HabitAssignStatus.ACQUIRED)
-                .workingDays(0)
-                .duration(0)
-                .build();
+            .habitAssignId(1L)
+            .userId(1L)
+            .habitId(1L)
+            .status(HabitAssignStatus.ACQUIRED)
+            .workingDays(0)
+            .duration(0)
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

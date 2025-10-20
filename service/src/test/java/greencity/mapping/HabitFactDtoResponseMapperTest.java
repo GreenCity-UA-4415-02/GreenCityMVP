@@ -27,26 +27,25 @@ class HabitFactDtoResponseMapperTest {
     @DisplayName("convert: HabitFactTranslation -> HabitFactDtoResponse")
     void convert_ok() {
         HabitFactVO entity = HabitFactVO.builder()
-                .id(1L)
-                .habit(null)
-                .translations(List.of(ModelUtils.getFactTranslationVO()))
-                .build();
+            .id(1L)
+            .habit(null)
+            .translations(List.of(ModelUtils.getFactTranslationVO()))
+            .build();
 
         HabitFactDtoResponse expected = HabitFactDtoResponse.builder()
-                .id(1L)
-                .habit(null)
-                .translations(List.of(
-                        HabitFactTranslationDto.builder()
-                                .id(1L)
-                                .content("Content")
-                                .factOfDayStatus(FactOfDayStatus.CURRENT)
-                                .language(LanguageDTO.builder()
-                                        .id(1L)
-                                        .code("en")
-                                        .build())
-                                .build()
-                ))
-                .build();
+            .id(1L)
+            .habit(null)
+            .translations(List.of(
+                HabitFactTranslationDto.builder()
+                    .id(1L)
+                    .content("Content")
+                    .factOfDayStatus(FactOfDayStatus.CURRENT)
+                    .language(LanguageDTO.builder()
+                        .id(1L)
+                        .code("en")
+                        .build())
+                    .build()))
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

@@ -30,16 +30,17 @@ class TagMapperTest {
     @DisplayName("convert: TagVO -> Tag")
     void convert_ok_withTranslations() {
         TagVO entity = ModelUtils.getTagVO().setTagTranslations(
-                Arrays.asList(TagTranslationVO.builder().id(1L).name("Новини")
-                        .languageVO(LanguageVO.builder().id(1L).code("ua").build()).build(),
-                TagTranslationVO.builder().id(2L).name("News").languageVO(LanguageVO.builder().id(2L).code("en").build())
-                        .build()));
+            Arrays.asList(TagTranslationVO.builder().id(1L).name("Новини")
+                .languageVO(LanguageVO.builder().id(1L).code("ua").build()).build(),
+                TagTranslationVO.builder().id(2L).name("News")
+                    .languageVO(LanguageVO.builder().id(2L).code("en").build())
+                    .build()));
 
         Tag expected = ModelUtils.getTag().setTagTranslations(
-                Arrays.asList(TagTranslation.builder().id(1L).name("Новини")
-                        .language(Language.builder().id(1L).code("ua").build()).build(),
+            Arrays.asList(TagTranslation.builder().id(1L).name("Новини")
+                .language(Language.builder().id(1L).code("ua").build()).build(),
                 TagTranslation.builder().id(2L).name("News").language(Language.builder().id(2L).code("en").build())
-                        .build()));
+                    .build()));
 
         assertEquals(expected, mapper.convert(entity));
     }

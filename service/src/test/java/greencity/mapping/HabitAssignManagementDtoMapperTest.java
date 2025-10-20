@@ -28,20 +28,20 @@ class HabitAssignManagementDtoMapperTest {
     @DisplayName("convert: HabitAssign -> HabitAssignManagementDto (core fields + USLI size)")
     void convert_ok() {
         HabitAssign entity = getHabitAssign()
-                .setCreateDate(zonedDateTime)
-                .setLastEnrollmentDate(zonedDateTime);
+            .setCreateDate(zonedDateTime)
+            .setLastEnrollmentDate(zonedDateTime);
 
         HabitAssignManagementDto expected = HabitAssignManagementDto.builder()
-                .id(1L)
-                .status(HabitAssignStatus.ACQUIRED)
-                .createDateTime(zonedDateTime)
-                .userId(1L)
-                .habitId(1L)
-                .duration(0)
-                .habitStreak(0)
-                .workingDays(0)
-                .lastEnrollment(zonedDateTime)
-                .build();
+            .id(1L)
+            .status(HabitAssignStatus.ACQUIRED)
+            .createDateTime(zonedDateTime)
+            .userId(1L)
+            .habitId(1L)
+            .duration(0)
+            .habitStreak(0)
+            .workingDays(0)
+            .lastEnrollment(zonedDateTime)
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class SubscribeResultDto {
-
     /**
      * Indicates if the operation was successful (always true for HTTP 200/201).
      */

@@ -26,23 +26,23 @@ public class NewsletterServiceImpl implements NewsletterService {
 
         if (newsletterSubscriptionRepo.existsByEmail(email)) {
             return SubscribeResultDto.builder()
-                                     .ok(true)
-                                     .alreadySubscribed(true)
-                                     .build();
+                .ok(true)
+                .alreadySubscribed(true)
+                .build();
         }
 
         SubscriptionSource sourceEnum = SubscriptionSource.valueOf(subscriptionDto.getSource().toUpperCase());
         NewsletterSubscription subscriptionEntity = NewsletterSubscription.builder()
-                                                                          .email(email)
-                                                                          .source(sourceEnum)
-                                                                          .status(SubscriptionStatus.SUBSCRIBED)
-                                                                          .createdAt(ZonedDateTime.now())
-                                                                          .build();
+            .email(email)
+            .source(sourceEnum)
+            .status(SubscriptionStatus.SUBSCRIBED)
+            .createdAt(ZonedDateTime.now())
+            .build();
 
         newsletterSubscriptionRepo.save(subscriptionEntity);
         return SubscribeResultDto.builder()
-                                 .ok(true)
-                                 .alreadySubscribed(false)
-                                 .build();
+            .ok(true)
+            .alreadySubscribed(false)
+            .build();
     }
 }

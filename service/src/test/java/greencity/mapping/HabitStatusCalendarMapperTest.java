@@ -26,20 +26,20 @@ class HabitStatusCalendarMapperTest {
     void convert_ok() {
         LocalDate localDate = LocalDate.now();
         HabitStatusCalendarVO entity = HabitStatusCalendarVO.builder()
+            .id(1L)
+            .enrollDate(localDate)
+            .habitAssignVO(HabitAssignVO.builder()
                 .id(1L)
-                .enrollDate(localDate)
-                .habitAssignVO(HabitAssignVO.builder()
-                        .id(1L)
-                        .build())
-                .build();
+                .build())
+            .build();
 
         HabitStatusCalendar expected = HabitStatusCalendar.builder()
+            .id(1L)
+            .enrollDate(localDate)
+            .habitAssign(HabitAssign.builder()
                 .id(1L)
-                .enrollDate(localDate)
-                .habitAssign(HabitAssign.builder()
-                        .id(1L)
-                        .build())
-                .build();
+                .build())
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

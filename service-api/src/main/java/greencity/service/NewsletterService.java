@@ -5,5 +5,4 @@ import greencity.dto.subscription.SubscriptionDto;
 
 public interface NewsletterService {
     SubscribeResultDto subscribe(SubscriptionDto subscriptionDto);
-
 }

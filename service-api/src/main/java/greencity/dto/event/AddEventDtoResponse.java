@@ -1,7 +1,6 @@
 package greencity.dto.event;
 
 import lombok.*;
-
 import java.util.List;
 
 @NoArgsConstructor

@@ -33,23 +33,23 @@ class HabitAssignDtoMapperTest {
     @DisplayName("convert: HabitAssign -> HabitAssignDto (basic fields)")
     void convert_ok() {
         HabitAssign entity = ModelUtils.getHabitAssign()
-                .setCreateDate(zonedDateTime)
-                .setLastEnrollmentDate(zonedDateTime);
+            .setCreateDate(zonedDateTime)
+            .setLastEnrollmentDate(zonedDateTime);
 
         HabitAssignDto expected = HabitAssignDto.builder()
+            .id(1L)
+            .status(HabitAssignStatus.ACQUIRED)
+            .createDateTime(zonedDateTime)
+            .userId(1L)
+            .duration(0)
+            .habitStreak(0)
+            .workingDays(0)
+            .lastEnrollmentDate(zonedDateTime)
+            .habitStatusCalendarDtoList(List.of(HabitStatusCalendarDto.builder()
                 .id(1L)
-                .status(HabitAssignStatus.ACQUIRED)
-                .createDateTime(zonedDateTime)
-                .userId(1L)
-                .duration(0)
-                .habitStreak(0)
-                .workingDays(0)
-                .lastEnrollmentDate(zonedDateTime)
-                .habitStatusCalendarDtoList(List.of(HabitStatusCalendarDto.builder()
-                                .id(1L)
-                                .enrollDate(LocalDate.now())
-                                .build()))
-                .build();
+                .enrollDate(LocalDate.now())
+                .build()))
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

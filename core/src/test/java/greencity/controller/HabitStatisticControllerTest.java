@@ -63,31 +63,30 @@ class HabitStatisticControllerTest {
         TEST_USER_VO.setEmail("test@gmail.com");
     }
 
-
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(habitStatisticController)
-                                      .setControllerAdvice(new CustomExceptionHandler(errorAttributes, objectMapper))
-                                      .setCustomArgumentResolvers(
-                                              new PageableHandlerMethodArgumentResolver(),
-                                              new CurrentUserHandler())
-                                      .build();
+            .setControllerAdvice(new CustomExceptionHandler(errorAttributes, objectMapper))
+            .setCustomArgumentResolvers(
+                new PageableHandlerMethodArgumentResolver(),
+                new CurrentUserHandler())
+            .build();
     }
 
     @Test
     @DisplayName("Test findAllByHabitId should return 200 OK")
     void findAllByHabitIdStatus200() throws Exception {
         GetHabitStatisticDto expectedDto = GetHabitStatisticDto.builder()
-                                                               .habitStatisticDtoList(Collections.emptyList())
-                                                               .amountOfUsersAcquired(1L)
-                                                               .build();
+            .habitStatisticDtoList(Collections.emptyList())
+            .amountOfUsersAcquired(1L)
+            .build();
 
         when(habitStatisticService.findAllStatsByHabitId(HABIT_ID)).thenReturn(expectedDto);
 
         mockMvc.perform(get(HABIT_LINK + "/{habitId}", HABIT_ID)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isOk());
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk());
         verify(habitStatisticService).findAllStatsByHabitId(HABIT_ID);
     }
 
@@ -99,9 +98,9 @@ class HabitStatisticControllerTest {
         when(habitStatisticService.findAllStatsByHabitAssignId(HABIT_ID)).thenReturn(exceptedDtoList);
 
         mockMvc.perform(get(HABIT_LINK + "/assign/{habitAssignId}", HABIT_ID)
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isOk());
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk());
         verify(habitStatisticService).findAllStatsByHabitAssignId(HABIT_ID);
     }
 
@@ -109,42 +108,47 @@ class HabitStatisticControllerTest {
     @DisplayName("Test saveHabitStatistic should return 200 OK")
     void saveHabitStatisticStatus200() throws Exception {
         AddHabitStatisticDto habitStatisticDto = AddHabitStatisticDto.builder()
-                                                                     .amountOfItems(5)
-                                                                     .habitRate(HabitRate.DEFAULT)
-                                                                     .createDate(ZonedDateTime.now())
-                                                                     .build();
+            .amountOfItems(5)
+            .habitRate(HabitRate.DEFAULT)
+            .createDate(ZonedDateTime.now())
+            .build();
 
-        HabitStatisticDto exceptedDto= HabitStatisticDto.builder()
-                                                        .id(1L)
-                                                        .createDate(ZonedDateTime.now())
-                                                        .habitAssignId(HABIT_ID)
-                                                        .habitRate(HabitRate.DEFAULT)
-                                                        .amountOfItems(5)
-                                                        .build();
+        HabitStatisticDto exceptedDto = HabitStatisticDto.builder()
+            .id(1L)
+            .createDate(ZonedDateTime.now())
+            .habitAssignId(HABIT_ID)
+            .habitRate(HabitRate.DEFAULT)
+            .amountOfItems(5)
+            .build();
 
-        when(habitStatisticService.saveByHabitIdAndUserId(eq(HABIT_ID),eq(TEST_USER_VO.getId()),any(AddHabitStatisticDto.class))).thenReturn(exceptedDto);
+        when(habitStatisticService.saveByHabitIdAndUserId(eq(HABIT_ID), eq(TEST_USER_VO.getId()),
+            any(AddHabitStatisticDto.class))).thenReturn(exceptedDto);
 
         mockMvc.perform(post(HABIT_LINK + "/{habitId}", HABIT_ID)
-                       .content(asJsonString(habitStatisticDto))
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isCreated());
-        verify(habitStatisticService).saveByHabitIdAndUserId(eq(HABIT_ID), eq(TEST_USER_VO.getId()), any(AddHabitStatisticDto.class));
+            .content(asJsonString(habitStatisticDto))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isCreated());
+        verify(habitStatisticService).saveByHabitIdAndUserId(eq(HABIT_ID), eq(TEST_USER_VO.getId()),
+            any(AddHabitStatisticDto.class));
     }
 
     @Test
     @DisplayName("Test updateStatistic should return 200 OK")
     void updateStatisticStatus200() throws Exception {
-        UpdateHabitStatisticDto habitStatisticForUpdateDto = UpdateHabitStatisticDto.builder().amountOfItems(5).habitRate(HabitRate.DEFAULT).build();
-        UpdateHabitStatisticDto expectedDto = UpdateHabitStatisticDto.builder().amountOfItems(5).habitRate(HabitRate.DEFAULT).build();
+        UpdateHabitStatisticDto habitStatisticForUpdateDto =
+            UpdateHabitStatisticDto.builder().amountOfItems(5).habitRate(HabitRate.DEFAULT).build();
+        UpdateHabitStatisticDto expectedDto =
+            UpdateHabitStatisticDto.builder().amountOfItems(5).habitRate(HabitRate.DEFAULT).build();
 
-        when(habitStatisticService.update(HABIT_ID,TEST_USER_VO.getId(),habitStatisticForUpdateDto)).thenReturn(expectedDto);
+        when(habitStatisticService.update(HABIT_ID, TEST_USER_VO.getId(), habitStatisticForUpdateDto))
+            .thenReturn(expectedDto);
 
         mockMvc.perform(put(HABIT_LINK + "/{id}", HABIT_ID)
-                       .content(asJsonString(habitStatisticForUpdateDto))
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isOk());
+            .content(asJsonString(habitStatisticForUpdateDto))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk());
         verify(habitStatisticService).update(HABIT_ID, TEST_USER_VO.getId(), habitStatisticForUpdateDto);
     }
 
@@ -152,20 +156,19 @@ class HabitStatisticControllerTest {
     @DisplayName("Test getTodayStatisticsForAllHabitItems should return 200 OK")
     void getTodayStatisticsForAllHabitItemsStatus200() throws Exception {
         List<HabitItemsAmountStatisticDto> exeptedDtoList = List.of(
-                HabitItemsAmountStatisticDto.builder().habitItem("1").notTakenItems(1L).build(),
-                HabitItemsAmountStatisticDto.builder().habitItem("2").notTakenItems(2L).build()
-        );
+            HabitItemsAmountStatisticDto.builder().habitItem("1").notTakenItems(1L).build(),
+            HabitItemsAmountStatisticDto.builder().habitItem("2").notTakenItems(2L).build());
         when(habitStatisticService.getTodayStatisticsForAllHabitItems("en")).thenReturn(exeptedDtoList);
 
         mockMvc.perform(get(HABIT_LINK + "/todayStatisticsForAllHabitItems")
-                       .locale(Locale.ENGLISH)
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$").isNotEmpty())
-               .andExpect(jsonPath("$.length()").value(exeptedDtoList.size()))
-               .andExpect(jsonPath("$[0].habitItem").isNotEmpty());
+            .locale(Locale.ENGLISH)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isNotEmpty())
+            .andExpect(jsonPath("$.length()").value(exeptedDtoList.size()))
+            .andExpect(jsonPath("$[0].habitItem").isNotEmpty());
         verify(habitStatisticService).getTodayStatisticsForAllHabitItems("en");
     }
 
@@ -200,12 +203,13 @@ class HabitStatisticControllerTest {
         @Override
         public boolean supportsParameter(@NotNull MethodParameter parameter) {
             return parameter.hasParameterAnnotation(CurrentUser.class)
-                    && UserVO.class.isAssignableFrom(parameter.getParameterType());
+                && UserVO.class.isAssignableFrom(parameter.getParameterType());
 
         }
 
         @Override
-        public Object resolveArgument(@NotNull MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+        public Object resolveArgument(@NotNull MethodParameter parameter, ModelAndViewContainer mavContainer,
+            NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
             TEST_USER_VO.setId(2L);
             TEST_USER_VO.setEmail("test@gmail.com");
             return TEST_USER_VO;

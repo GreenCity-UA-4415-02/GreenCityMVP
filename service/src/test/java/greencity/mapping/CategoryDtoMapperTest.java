@@ -20,11 +20,11 @@ class CategoryDtoMapperTest {
     @DisplayName("Expected mapping OK")
     void convertTest() {
         CategoryDto dto = CategoryDto.builder()
-                .name("name")
-                .build();
+            .name("name")
+            .build();
         Category expected = Category.builder()
-                .name("name")
-                .build();
+            .name("name")
+            .build();
 
         Category actual = mapper.convert(dto);
 
@@ -43,8 +43,8 @@ class CategoryDtoMapperTest {
     @DisplayName("Convert: empty name -> maps empty string")
     void convert_emptyName_ok() {
         CategoryDto dto = CategoryDto.builder()
-                .name("")
-                .build();
+            .name("")
+            .build();
 
         Category entity = mapper.convert(dto);
 
@@ -56,8 +56,8 @@ class CategoryDtoMapperTest {
     @DisplayName("Convert: null name in DTO -> maps null to entity.name")
     void convert_nullName_ok() {
         CategoryDto dto = CategoryDto.builder()
-                .name(null)
-                .build();
+            .name(null)
+            .build();
 
         Category entity = mapper.convert(dto);
 

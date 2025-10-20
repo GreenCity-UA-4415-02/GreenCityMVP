@@ -22,16 +22,16 @@ class CustomShoppingListResponseDtoMapperTest {
     @DisplayName("Convert: Entity -> ResponseDto")
     void convert_ok() {
         CustomShoppingListItem entity = CustomShoppingListItem.builder()
-                .id(1L)
-                .text("text")
-                .status(ShoppingListItemStatus.ACTIVE)
-                .build();
+            .id(1L)
+            .text("text")
+            .status(ShoppingListItemStatus.ACTIVE)
+            .build();
 
         CustomShoppingListItemResponseDto expected = CustomShoppingListItemResponseDto.builder()
-                .id(1L)
-                .text("text")
-                .status(ShoppingListItemStatus.ACTIVE)
-                .build();
+            .id(1L)
+            .text("text")
+            .status(ShoppingListItemStatus.ACTIVE)
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }
@@ -40,20 +40,19 @@ class CustomShoppingListResponseDtoMapperTest {
     @DisplayName("Convert: List of DTO -> List of entity")
     void convertAllToList_ok() {
         List<CustomShoppingListItem> dtoList = List.of(CustomShoppingListItem.builder()
-                .id(1L)
-                .text("text")
-                .status(ShoppingListItemStatus.ACTIVE)
-                .build());
+            .id(1L)
+            .text("text")
+            .status(ShoppingListItemStatus.ACTIVE)
+            .build());
 
         List<CustomShoppingListItemResponseDto> expected = List.of(CustomShoppingListItemResponseDto.builder()
-                .id(1L)
-                .text("text")
-                .status(ShoppingListItemStatus.ACTIVE)
-                .build());
+            .id(1L)
+            .text("text")
+            .status(ShoppingListItemStatus.ACTIVE)
+            .build());
 
         assertEquals(expected, mapper.mapAllToList(dtoList));
     }
-
 
     @Test
     @DisplayName("Convert: null -> NPE")

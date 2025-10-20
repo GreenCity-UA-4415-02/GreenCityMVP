@@ -38,15 +38,15 @@ class SearchNewsDtoMapperTest {
         LocaleContextHolder.setLocale(new Locale("en"));
 
         SearchNewsDto expected = SearchNewsDto.builder()
+            .id(1L)
+            .title("title")
+            .author(EcoNewsAuthorDto.builder()
                 .id(1L)
-                .title("title")
-                .author(EcoNewsAuthorDto.builder()
-                        .id(1L)
-                        .name(TestConst.NAME)
-                        .build())
-                .creationDate(zonedDateTime)
-                .tags(List.of("News"))
-                .build();
+                .name(TestConst.NAME)
+                .build())
+            .creationDate(zonedDateTime)
+            .tags(List.of("News"))
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }
@@ -59,15 +59,15 @@ class SearchNewsDtoMapperTest {
         LocaleContextHolder.setLocale(new Locale("ua"));
 
         SearchNewsDto expected = SearchNewsDto.builder()
+            .id(1L)
+            .title("title")
+            .author(EcoNewsAuthorDto.builder()
                 .id(1L)
-                .title("title")
-                .author(EcoNewsAuthorDto.builder()
-                        .id(1L)
-                        .name(TestConst.NAME)
-                        .build())
-                .creationDate(zonedDateTime)
-                .tags(List.of("Новини"))
-                .build();
+                .name(TestConst.NAME)
+                .build())
+            .creationDate(zonedDateTime)
+            .tags(List.of("Новини"))
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

@@ -31,19 +31,19 @@ class EcoNewsDtoMapperTest {
         EcoNews entity = ModelUtils.getEcoNews();
 
         EcoNewsDto expected = EcoNewsDto.builder()
-                .creationDate(entity.getCreationDate())
-                .imagePath(entity.getImagePath())
-                .id(entity.getId())
-                .title(entity.getTitle())
-                .content(entity.getText())
-                .shortInfo(entity.getShortInfo())
-                .author(ModelUtils.getEcoNewsAuthorDto())
-                .tags(List.of("News"))
-                .tagsUa(List.of("Новини"))
-                .likes(entity.getUsersLikedNews().size())
-                .dislikes(entity.getUsersDislikedNews().size())
-                .countComments(1)
-                .build();
+            .creationDate(entity.getCreationDate())
+            .imagePath(entity.getImagePath())
+            .id(entity.getId())
+            .title(entity.getTitle())
+            .content(entity.getText())
+            .shortInfo(entity.getShortInfo())
+            .author(ModelUtils.getEcoNewsAuthorDto())
+            .tags(List.of("News"))
+            .tagsUa(List.of("Новини"))
+            .likes(entity.getUsersLikedNews().size())
+            .dislikes(entity.getUsersDislikedNews().size())
+            .countComments(1)
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

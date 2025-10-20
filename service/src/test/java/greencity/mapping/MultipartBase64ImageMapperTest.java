@@ -56,6 +56,6 @@ class MultipartBase64ImageMapperTest {
     @DisplayName("convert: invalid base64 -> throws IllegalStateException (decodeBase64)")
     void convert_invalid() {
         assertThrows(IllegalStateException.class,
-                () -> mapper.convert("data:image/png;base64,NOT_BASE64"));
+            () -> mapper.convert("data:image/png;base64,NOT_BASE64"));
     }
 }

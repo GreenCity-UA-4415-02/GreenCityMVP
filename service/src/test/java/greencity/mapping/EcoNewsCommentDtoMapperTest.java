@@ -29,26 +29,26 @@ class EcoNewsCommentDtoMapperTest {
     void convert_ok() {
         LocalDateTime now = LocalDateTime.now();
         EcoNewsComment entity = EcoNewsComment.builder()
-                .id(1L)
-                .text("text")
-                .createdDate(now)
-                .modifiedDate(now)
-                .user(getUser())
-                .ecoNews(getEcoNews())
-                .deleted(false)
-                .currentUserLiked(false)
-                .usersLiked(Collections.emptySet())
-                .build();
+            .id(1L)
+            .text("text")
+            .createdDate(now)
+            .modifiedDate(now)
+            .user(getUser())
+            .ecoNews(getEcoNews())
+            .deleted(false)
+            .currentUserLiked(false)
+            .usersLiked(Collections.emptySet())
+            .build();
         EcoNewsCommentDto expected = EcoNewsCommentDto.builder()
-                .id(1L)
-                .modifiedDate(now)
-                .author(getEcoNewsCommentAuthorDto())
-                .text("text")
-                .replies(0)
-                .likes(0)
-                .currentUserLiked(false)
-                .status(CommentStatus.ORIGINAL)
-                .build();
+            .id(1L)
+            .modifiedDate(now)
+            .author(getEcoNewsCommentAuthorDto())
+            .text("text")
+            .replies(0)
+            .likes(0)
+            .currentUserLiked(false)
+            .status(CommentStatus.ORIGINAL)
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

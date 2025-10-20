@@ -22,16 +22,16 @@ class HabitTranslationMapperTest {
     @DisplayName("convert: HabitTranslationDTO -> HabitTranslation")
     void convert_ok() {
         HabitTranslationDto entity = HabitTranslationDto.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .build();
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .build();
 
         HabitTranslation expected = HabitTranslation.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .build();
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }
@@ -47,16 +47,16 @@ class HabitTranslationMapperTest {
     @DisplayName("convert: HabitTranslation -> HabitTranslationDto")
     void convert_mapAllToList_ok() {
         List<HabitTranslationDto> entity = List.of(HabitTranslationDto.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .build());
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .build());
 
         List<HabitTranslation> expected = List.of(HabitTranslation.builder()
-                .description("description")
-                .habitItem("item")
-                .name("name")
-                .build());
+            .description("description")
+            .habitItem("item")
+            .name("name")
+            .build());
 
         assertEquals(expected, mapper.mapAllToList(entity));
     }

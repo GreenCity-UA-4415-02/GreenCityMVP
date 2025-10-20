@@ -23,9 +23,9 @@ class UtilsMapperTest {
     void map_single_ok() {
         Language entity = getLanguage();
         LanguageVO expected = LanguageVO.builder()
-                .id(1L)
-                .code(AppConstant.DEFAULT_LANGUAGE_CODE)
-                .build();
+            .id(1L)
+            .code(AppConstant.DEFAULT_LANGUAGE_CODE)
+            .build();
 
         assertEquals(expected, UtilsMapper.map(entity, LanguageVO.class));
     }
@@ -35,13 +35,13 @@ class UtilsMapperTest {
     void mapAllToList_ok() {
         List<Language> list = List.of(getLanguage(), getLanguageUa());
         List<LanguageVO> expected = List.of(LanguageVO.builder()
-                        .id(1L)
-                        .code(AppConstant.DEFAULT_LANGUAGE_CODE)
-                        .build(),
-                LanguageVO.builder()
-                        .id(2L)
-                        .code("ua")
-                        .build());
+            .id(1L)
+            .code(AppConstant.DEFAULT_LANGUAGE_CODE)
+            .build(),
+            LanguageVO.builder()
+                .id(2L)
+                .code("ua")
+                .build());
 
         assertEquals(expected, UtilsMapper.mapAllToList(list, LanguageVO.class));
     }
@@ -51,13 +51,13 @@ class UtilsMapperTest {
     void mapAllToSet_ok() {
         List<Language> list = List.of(getLanguage(), getLanguageUa());
         Set<LanguageVO> expected = Set.of(LanguageVO.builder()
-                        .id(1L)
-                        .code(AppConstant.DEFAULT_LANGUAGE_CODE)
-                        .build(),
-                LanguageVO.builder()
-                        .id(2L)
-                        .code("ua")
-                        .build());
+            .id(1L)
+            .code(AppConstant.DEFAULT_LANGUAGE_CODE)
+            .build(),
+            LanguageVO.builder()
+                .id(2L)
+                .code("ua")
+                .build());
 
         assertEquals(expected, UtilsMapper.mapAllToSet(list, LanguageVO.class));
     }

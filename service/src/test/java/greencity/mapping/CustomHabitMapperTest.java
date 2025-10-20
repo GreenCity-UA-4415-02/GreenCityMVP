@@ -22,16 +22,16 @@ class CustomHabitMapperTest {
     @DisplayName("Convert: maps fields from DTO to Habit")
     void convert_ok() {
         AddCustomHabitDtoRequest dto = AddCustomHabitDtoRequest.builder()
-                .image(TestConst.IMG_NAME)
-                .complexity(1)
-                .defaultDuration(2)
-                .build();
+            .image(TestConst.IMG_NAME)
+            .complexity(1)
+            .defaultDuration(2)
+            .build();
         Habit expected = Habit.builder()
-                .image(TestConst.IMG_NAME)
-                .complexity(1)
-                .defaultDuration(2)
-                .isCustomHabit(true)
-                .build();
+            .image(TestConst.IMG_NAME)
+            .complexity(1)
+            .defaultDuration(2)
+            .isCustomHabit(true)
+            .build();
 
         Habit actual = mapper.convert(dto);
 
