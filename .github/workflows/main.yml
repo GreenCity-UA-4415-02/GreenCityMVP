@@ -8,9 +8,9 @@ concurrency: Testing
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master, dev, "ci-cd/*" ]
+    branches: [ master, dev, dev_java21, "ci-cd/*" ]
   pull_request:
-    branches: [ master, dev, "ci-cd/*" ]
+    branches: [ master, dev, dev_java21, "ci-cd/*" ]
 
 env:
   repository: greencity
