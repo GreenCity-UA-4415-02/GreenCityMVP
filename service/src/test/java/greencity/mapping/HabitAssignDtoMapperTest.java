@@ -3,24 +3,15 @@ package greencity.mapping;
 import greencity.ModelUtils;
 import greencity.dto.habit.HabitAssignDto;
 import greencity.dto.habitstatuscalendar.HabitStatusCalendarDto;
-import greencity.entity.Habit;
 import greencity.entity.HabitAssign;
-import greencity.entity.HabitTranslation;
 import greencity.enums.HabitAssignStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static greencity.ModelUtils.localDateTime;
 import static greencity.ModelUtils.zonedDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 

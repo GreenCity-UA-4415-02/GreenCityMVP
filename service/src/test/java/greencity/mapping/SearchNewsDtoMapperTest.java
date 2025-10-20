@@ -5,23 +5,14 @@ import greencity.TestConst;
 import greencity.dto.search.SearchNewsDto;
 import greencity.dto.user.EcoNewsAuthorDto;
 import greencity.entity.EcoNews;
-import greencity.entity.EcoNewsComment;
-import greencity.entity.Language;
-import greencity.entity.Tag;
-import greencity.entity.localization.TagTranslation;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
-import static greencity.ModelUtils.getUser;
 import static greencity.ModelUtils.zonedDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 

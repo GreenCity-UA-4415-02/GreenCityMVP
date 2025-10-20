@@ -1,18 +1,13 @@
 package greencity.mapping;
 
-import greencity.ModelUtils;
 import greencity.dto.habit.HabitDto;
-import greencity.entity.Habit;
 import greencity.entity.HabitTranslation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.ui.Model;
-
 import java.util.Collections;
-
 import static greencity.ModelUtils.getHabitAssign;
 import static greencity.ModelUtils.getLanguage;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,21 +1,13 @@
 package greencity.mapping;
 
-import greencity.ModelUtils;
-import greencity.entity.Habit;
 import greencity.entity.HabitAssign;
 import greencity.dto.habit.HabitAssignManagementDto;
-import greencity.entity.HabitTranslation;
 import greencity.enums.HabitAssignStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import static greencity.ModelUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 

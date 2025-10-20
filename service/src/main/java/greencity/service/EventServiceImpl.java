@@ -93,7 +93,6 @@ public class EventServiceImpl implements EventService {
         if (dto.getDatesLocations().stream().anyMatch(d -> d.getStartDate().isBefore(LocalDateTime.now()))) {
             throw new BadRequestException("Dates must be in the future");
         }
-
         if (images != null) {
             if (images.size() > 5) {
                 throw new BadRequestException("Maximum 5 images allowed");

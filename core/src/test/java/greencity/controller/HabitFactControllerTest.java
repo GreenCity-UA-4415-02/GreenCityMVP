@@ -13,7 +13,6 @@ import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.handler.CustomExceptionHandler;
 import greencity.service.HabitFactService;
 import greencity.service.LanguageService;
-import greencity.validator.LanguageValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,12 +30,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 // ВАЖЛИВО: Імпортуємо для використання валідатора у standalone setup
 import org.springframework.validation.Validator;
-import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;

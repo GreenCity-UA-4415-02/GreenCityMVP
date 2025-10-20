@@ -5,17 +5,13 @@ import greencity.dto.habitfact.HabitFactDtoResponse;
 import greencity.dto.habitfact.HabitFactTranslationDto;
 import greencity.dto.habitfact.HabitFactVO;
 import greencity.dto.language.LanguageDTO;
-import greencity.entity.HabitFactTranslation;
 import greencity.enums.FactOfDayStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.util.List;
-
-import static greencity.ModelUtils.getFactTranslation;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)

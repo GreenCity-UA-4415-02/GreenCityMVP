@@ -1,14 +1,10 @@
 package greencity.mapping;
 
-import greencity.ModelUtils;
 import greencity.dto.econewscomment.EcoNewsCommentDto;
 import greencity.entity.EcoNewsComment;
-import greencity.entity.User;
 import greencity.enums.CommentStatus; // якщо є
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Set;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

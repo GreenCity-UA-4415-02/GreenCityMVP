@@ -22,9 +22,6 @@ public class EventController {
 
     /**
      * Endpoint to create new Event with images (multipart/form-data).
-     *
-     * @param request request.
-     * @return CREATED.
      */
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER')")

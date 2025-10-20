@@ -5,7 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
 
-    <changeSet id="01-create-newsletter-subscriptions" author="admin">
+    <!-- Fixed by Shankin -->
+    <changeSet id="01-create-newsletter-subscriptions" author="Titenko">
         <comment>Створення таблиці для підписок на розсилку новин.</comment>
 
         <createTable tableName="newsletter_subscriptions">
@@ -24,7 +25,7 @@
                              constraintName="uc_newsletter_subscriptions_email"/>
     </changeSet>
 
-    <changeSet id="02-add-fields-to-newsletter-subscriptions" author="your_name">
+    <changeSet id="02-add-fields-to-newsletter-subscriptions" author="Titenko">
         <comment>added 'status', 'source', 'created_at', 'updated_at' into table newsletter_subscriptions.</comment>
 
         <addColumn tableName="newsletter_subscriptions">

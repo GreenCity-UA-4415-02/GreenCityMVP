@@ -1,6 +1,5 @@
 package greencity.mapping;
 
-import greencity.ModelUtils;
 import greencity.dto.econews.EcoNewsVO;
 import greencity.dto.econewscomment.EcoNewsCommentVO;
 import greencity.dto.user.UserVO;
@@ -12,11 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Set;
-
 import static greencity.ModelUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 

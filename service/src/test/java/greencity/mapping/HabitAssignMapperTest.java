@@ -1,7 +1,6 @@
 package greencity.mapping;
 
 import greencity.dto.habit.HabitAssignDto;
-import greencity.dto.habit.HabitAssignManagementDto;
 import greencity.dto.habit.HabitDto;
 import greencity.dto.user.UserShoppingListItemAdvanceDto;
 import greencity.entity.Habit;
@@ -15,9 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.util.List;
-
 import static greencity.ModelUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
