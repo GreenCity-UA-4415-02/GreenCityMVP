@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <changeSet id="01-change-users-addColumns" author="Shankin">
+
+        <addColumn schemaName="public" tableName="users">
+            <column name="provider" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="provider_id" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="avatar_url" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="email_verified" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <rollback>
+            <dropColumn schemaName="public" tableName="users" columnName="email_verified"/>
+            <dropColumn schemaName="public" tableName="users" columnName="avatar_url"/>
+            <dropColumn schemaName="public" tableName="users" columnName="provider_id"/>
+            <dropColumn schemaName="public" tableName="users" columnName="provider"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="02-unique-provider-provider_id" author="Shankin">
+
+        <addUniqueConstraint
+                schemaName="public"
+                tableName="users"
+                columnNames="provider, provider_id"
+                constraintName="uq_user_provider_provider_id"/>
+
+        <rollback>
+            <dropUniqueConstraint schemaName="public" tableName="users" constraintName="uq_user_provider_provider_id"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
