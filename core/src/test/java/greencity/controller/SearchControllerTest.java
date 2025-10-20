@@ -43,7 +43,6 @@ class SearchControllerTest {
 
     private final Locale testLocale = Locale.ENGLISH;
 
-
     static class LocaleResolverMock implements HandlerMethodArgumentResolver {
         @Override
         public boolean supportsParameter(org.springframework.core.MethodParameter parameter) {
@@ -52,41 +51,38 @@ class SearchControllerTest {
 
         @Override
         public Object resolveArgument(org.springframework.core.MethodParameter parameter,
-                                      ModelAndViewContainer mavContainer,
-                                      NativeWebRequest webRequest,
-                                      org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
+            ModelAndViewContainer mavContainer,
+            NativeWebRequest webRequest,
+            org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
             return Locale.ENGLISH;
         }
     }
 
-
     @BeforeEach
     void setup() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(searchController)
-                .setCustomArgumentResolvers(
-                        new PageableHandlerMethodArgumentResolver(),
-                        new LocaleResolverMock()
-                ).setValidator(new Validator() {
-                    @Override
-                    public boolean supports(Class<?> clazz) {
-                        return true;
-                    }
+            .setCustomArgumentResolvers(
+                new PageableHandlerMethodArgumentResolver(),
+                new LocaleResolverMock())
+            .setValidator(new Validator() {
+                @Override
+                public boolean supports(Class<?> clazz) {
+                    return true;
+                }
 
-                    @Override
-                    public void validate(Object target, Errors errors) {
+                @Override
+                public void validate(Object target, Errors errors) {
 
-                    }
-                })
-                .build();
+                }
+            })
+            .build();
     }
-
-
 
     @Test
     void search_shouldReturnBadRequest_whenMissingQuery() throws Exception {
         mockMvc.perform(get("/search")
-                        .locale(testLocale))
-                .andExpect(status().isBadRequest());
+            .locale(testLocale))
+            .andExpect(status().isBadRequest());
 
         verify(searchService, never()).search(anyString(), anyString());
     }
@@ -94,43 +90,41 @@ class SearchControllerTest {
     @Test
     void searchEcoNews_shouldReturnBadRequest_whenMissingQuery() throws Exception {
         mockMvc.perform(get("/search/econews")
-                        .param("page", "0")
-                        .param("size", "5")
-                        .locale(testLocale))
-                .andExpect(status().isBadRequest());
+            .param("page", "0")
+            .param("size", "5")
+            .locale(testLocale))
+            .andExpect(status().isBadRequest());
 
         verify(searchService, never()).searchAllNews(any(), anyString(), anyString());
     }
-
-
 
     @Test
     void search_shouldReturnSearchResponseDto() throws Exception {
         EcoNewsAuthorDto author = EcoNewsAuthorDto.builder().id(1L).name("Author").build();
 
         SearchNewsDto newsDto = SearchNewsDto.builder()
-                .id(1L)
-                .title("Eco news title")
-                .author(author)
-                .creationDate(ZonedDateTime.now())
-                .tags(List.of("tag1", "tag2"))
-                .build();
+            .id(1L)
+            .title("Eco news title")
+            .author(author)
+            .creationDate(ZonedDateTime.now())
+            .tags(List.of("tag1", "tag2"))
+            .build();
 
         SearchResponseDto responseDto = SearchResponseDto.builder()
-                .ecoNews(List.of(newsDto))
-                .countOfResults(1L)
-                .build();
+            .ecoNews(List.of(newsDto))
+            .countOfResults(1L)
+            .build();
 
         when(searchService.search("eco", testLocale.getLanguage())).thenReturn(responseDto);
 
         mockMvc.perform(get("/search")
-                        .param("searchQuery", "eco")
-                        .locale(testLocale)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ecoNews[0].title").value("Eco news title"))
-                .andExpect(jsonPath("$.countOfResults").value(1));
+            .param("searchQuery", "eco")
+            .locale(testLocale)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ecoNews[0].title").value("Eco news title"))
+            .andExpect(jsonPath("$.countOfResults").value(1));
 
         verify(searchService, times(1)).search("eco", testLocale.getLanguage());
     }
@@ -140,38 +134,36 @@ class SearchControllerTest {
         EcoNewsAuthorDto author = EcoNewsAuthorDto.builder().id(1L).name("Author").build();
 
         SearchNewsDto newsDto = SearchNewsDto.builder()
-                .id(1L)
-                .title("News1")
-                .author(author)
-                .creationDate(ZonedDateTime.now())
-                .tags(List.of("tag1"))
-                .build();
+            .id(1L)
+            .title("News1")
+            .author(author)
+            .creationDate(ZonedDateTime.now())
+            .tags(List.of("tag1"))
+            .build();
 
         PageableDto<SearchNewsDto> pageableDto = new PageableDto<>(
-                List.of(newsDto),
-                1,
-                0,
-                1
-        );
+            List.of(newsDto),
+            1,
+            0,
+            1);
 
         when(searchService.searchAllNews(PageRequest.of(0, 5), "eco", testLocale.getLanguage()))
-                .thenReturn(pageableDto);
+            .thenReturn(pageableDto);
 
         mockMvc.perform(get("/search/econews")
-                        .param("searchQuery", "eco")
-                        .param("page", "0")
-                        .param("size", "5")
-                        .locale(testLocale)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.page[0].title").value("News1"))
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.currentPage").value(0))
-                .andExpect(jsonPath("$.totalPages").value(1));
+            .param("searchQuery", "eco")
+            .param("page", "0")
+            .param("size", "5")
+            .locale(testLocale)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.page[0].title").value("News1"))
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.currentPage").value(0))
+            .andExpect(jsonPath("$.totalPages").value(1));
 
         verify(searchService, times(1))
-                .searchAllNews(PageRequest.of(0, 5), "eco", testLocale.getLanguage());
+            .searchAllNews(PageRequest.of(0, 5), "eco", testLocale.getLanguage());
     }
 }
-

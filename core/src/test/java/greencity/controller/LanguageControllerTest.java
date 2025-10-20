@@ -41,10 +41,10 @@ class LanguageControllerTest {
         when(languageService.findAllLanguageCodes()).thenReturn(languages);
 
         mockMvc.perform(get(languageLink)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[\"en\",\"ua\",\"fr\"]"));
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().json("[\"en\",\"ua\",\"fr\"]"));
 
         verify(languageService, times(1)).findAllLanguageCodes();
         verifyNoMoreInteractions(languageService);

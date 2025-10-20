@@ -25,20 +25,19 @@ class HabitManagementDtoMapperTest {
         Habit entity = getHabitAssign().getHabit();
 
         HabitManagementDto expected = HabitManagementDto.builder()
-                .id(1L)
-                .image("")
-                .complexity(null)
-                .defaultDuration(null)
-                .habitTranslations(List.of(
-                        HabitTranslationManagementDto.builder()
-                                .id(1L)
-                                .name("")
-                                .description("")
-                                .habitItem("")
-                                .languageCode("en")
-                                .build()
-                ))
-                .build();
+            .id(1L)
+            .image("")
+            .complexity(null)
+            .defaultDuration(null)
+            .habitTranslations(List.of(
+                HabitTranslationManagementDto.builder()
+                    .id(1L)
+                    .name("")
+                    .description("")
+                    .habitItem("")
+                    .languageCode("en")
+                    .build()))
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

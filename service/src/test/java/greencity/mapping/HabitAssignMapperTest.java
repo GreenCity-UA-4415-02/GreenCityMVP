@@ -1,7 +1,6 @@
 package greencity.mapping;
 
 import greencity.dto.habit.HabitAssignDto;
-import greencity.dto.habit.HabitAssignManagementDto;
 import greencity.dto.habit.HabitDto;
 import greencity.dto.user.UserShoppingListItemAdvanceDto;
 import greencity.entity.Habit;
@@ -15,9 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.util.List;
-
 import static greencity.ModelUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,48 +27,48 @@ class HabitAssignMapperTest {
     @DisplayName("Convert: HabitAssignManagementDto -> HabitAssign")
     void convert_ok() {
         HabitAssignDto dto = HabitAssignDto.builder()
+            .id(1L)
+            .duration(0)
+            .habitStreak(0)
+            .createDateTime(zonedDateTime)
+            .status(HabitAssignStatus.INPROGRESS)
+            .workingDays(0)
+            .lastEnrollmentDate(zonedDateTime)
+            .habit(HabitDto.builder()
                 .id(1L)
-                .duration(0)
-                .habitStreak(0)
-                .createDateTime(zonedDateTime)
-                .status(HabitAssignStatus.INPROGRESS)
-                .workingDays(0)
-                .lastEnrollmentDate(zonedDateTime)
-                .habit(HabitDto.builder()
-                        .id(1L)
-                        .complexity(0)
-                        .build())
-                .duration(0)
-                .userShoppingListItems(List.of(UserShoppingListItemAdvanceDto.builder()
-                        .id(1L)
-                        .shoppingListItemId(1L)
-                        .dateCompleted(localDateTime)
-                        .status(ShoppingListItemStatus.INPROGRESS)
-                        .build()))
-                .build();
+                .complexity(0)
+                .build())
+            .duration(0)
+            .userShoppingListItems(List.of(UserShoppingListItemAdvanceDto.builder()
+                .id(1L)
+                .shoppingListItemId(1L)
+                .dateCompleted(localDateTime)
+                .status(ShoppingListItemStatus.INPROGRESS)
+                .build()))
+            .build();
 
         HabitAssign expected = HabitAssign.builder()
+            .id(1L)
+            .duration(0)
+            .habitStreak(0)
+            .createDate(zonedDateTime)
+            .status(HabitAssignStatus.INPROGRESS)
+            .workingDays(0)
+            .lastEnrollmentDate(zonedDateTime)
+            .habit(Habit.builder()
                 .id(1L)
-                .duration(0)
-                .habitStreak(0)
-                .createDate(zonedDateTime)
-                .status(HabitAssignStatus.INPROGRESS)
-                .workingDays(0)
-                .lastEnrollmentDate(zonedDateTime)
-                .habit(Habit.builder()
-                        .id(1L)
-                        .complexity(0)
-                        .defaultDuration(0)
-                        .build())
-                .userShoppingListItems(List.of(UserShoppingListItem.builder()
-                        .id(1L)
-                        .dateCompleted(localDateTime)
-                        .status(ShoppingListItemStatus.INPROGRESS)
-                        .shoppingListItem(ShoppingListItem.builder()
-                                .id(1L)
-                                .build())
-                        .build()))
-                .build();
+                .complexity(0)
+                .defaultDuration(0)
+                .build())
+            .userShoppingListItems(List.of(UserShoppingListItem.builder()
+                .id(1L)
+                .dateCompleted(localDateTime)
+                .status(ShoppingListItemStatus.INPROGRESS)
+                .shoppingListItem(ShoppingListItem.builder()
+                    .id(1L)
+                    .build())
+                .build()))
+            .build();
 
         assertEquals(expected, mapper.convert(dto));
     }

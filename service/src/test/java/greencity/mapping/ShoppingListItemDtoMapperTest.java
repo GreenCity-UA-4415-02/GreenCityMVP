@@ -21,10 +21,9 @@ class ShoppingListItemDtoMapperTest {
         ShoppingListItemTranslation entity = ModelUtils.getShoppingListItemTranslations().get(0);
 
         ShoppingListItemDto expected = new ShoppingListItemDto(
-                1L,
-                "Buy a bamboo toothbrush",
-                ShoppingListItemStatus.ACTIVE.toString()
-        );
+            1L,
+            "Buy a bamboo toothbrush",
+            ShoppingListItemStatus.ACTIVE.toString());
 
         assertEquals(expected, mapper.convert(entity));
     }

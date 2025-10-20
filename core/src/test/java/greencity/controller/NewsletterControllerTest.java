@@ -36,35 +36,34 @@ class NewsletterControllerTest {
     private ObjectMapper objectMapper;
     private SubscriptionDto testSubscriptionDto;
 
-
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(newsletterController)
-                                      .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
-                                      .build();
+            .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+            .build();
         this.objectMapper = new ObjectMapper();
         this.testSubscriptionDto = SubscriptionDto.builder()
-                                                  .email(EMAIL)
-                                                  .source("QR")
-                                                  .build();
+            .email(EMAIL)
+            .source("QR")
+            .build();
     }
 
     @Test
-    @DisplayName( "Test subscribe should return 200 OK" )
+    @DisplayName("Test subscribe should return 200 OK")
     void subscribeStatus200() throws Exception {
         SubscribeResultDto expectedSubscribeResultDto = SubscribeResultDto.builder()
-                                                                  .ok(true)
-                                                                  .alreadySubscribed(false)
-                                                                  .build();
+            .ok(true)
+            .alreadySubscribed(false)
+            .build();
         when(newsletterService.subscribe(testSubscriptionDto)).thenReturn(expectedSubscribeResultDto);
 
         mockMvc.perform(post(NEWS_LETTER_LINK + "/subscribe")
-                       .content(objectMapper.writeValueAsString(testSubscriptionDto))
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.ok").value(true))
-               .andExpect(jsonPath("$.alreadySubscribed").value(false));
+            .content(objectMapper.writeValueAsString(testSubscriptionDto))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ok").value(true))
+            .andExpect(jsonPath("$.alreadySubscribed").value(false));
         verify(newsletterService).subscribe(testSubscriptionDto);
     }
 
@@ -72,19 +71,19 @@ class NewsletterControllerTest {
     @DisplayName("Test subscribe should return 200 OK when email is already subscribed")
     void subscribeStatusAlreadySubscribed() throws Exception {
         SubscribeResultDto expectedSubscribeResultDto = SubscribeResultDto.builder()
-                                                                          .ok(true)
-                                                                          .alreadySubscribed(true)
-                                                                          .build();
+            .ok(true)
+            .alreadySubscribed(true)
+            .build();
 
         when(newsletterService.subscribe(testSubscriptionDto)).thenReturn(expectedSubscribeResultDto);
 
         mockMvc.perform(post(NEWS_LETTER_LINK + "/subscribe")
-                       .content(objectMapper.writeValueAsString(testSubscriptionDto))
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.ok").value(true))
-               .andExpect(jsonPath("$.alreadySubscribed").value(true));
+            .content(objectMapper.writeValueAsString(testSubscriptionDto))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ok").value(true))
+            .andExpect(jsonPath("$.alreadySubscribed").value(true));
 
         verify(newsletterService).subscribe(testSubscriptionDto);
     }
@@ -93,14 +92,14 @@ class NewsletterControllerTest {
     @DisplayName("Test subscribe should return 400 BAD_REQUEST")
     void subscribeStatus400() throws Exception {
         SubscriptionDto invalidSubscriptionDto = SubscriptionDto.builder()
-                                                                .email("234@")
-                                                                .source("QR")
-                                                                .build();
+            .email("234@")
+            .source("QR")
+            .build();
         mockMvc.perform(post(NEWS_LETTER_LINK + "/subscribe")
-                       .content(objectMapper.writeValueAsString(invalidSubscriptionDto))
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isBadRequest());
+            .content(objectMapper.writeValueAsString(invalidSubscriptionDto))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isBadRequest());
         verify(newsletterService, never()).subscribe(any(SubscriptionDto.class));
     }
 }
