@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -31,34 +33,43 @@ public class EventServiceImpl implements EventService {
         validateRequest(request, images);
 
         User user = userRepo.findByEmail(email)
-            .orElseThrow(() -> new BadRequestException("User not found"));
+                .orElseThrow(() -> new BadRequestException("User not found"));
 
         Event event = Event.builder()
-            .title(request.getTitle())
-            .description(request.getDescription())
-            .isOpen(request.getOpen())
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .organizer(user)
-            .build();
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .isOpen(request.getOpen())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .organizer(user)
+                .build();
 
         List<EventDateLocation> dateLocations = request.getDatesLocations().stream()
-            .map(dl -> EventDateLocation.builder()
-                .startDate(dl.getStartDate())
-                .finishDate(dl.getFinishDate())
-                .latitude(dl.getLatitude())
-                .longitude(dl.getLongitude())
-                .onlineLink(dl.getOnlineLink())
-                .event(event)
-                .build())
-            .collect(Collectors.toList());
+                .map(dl -> EventDateLocation.builder()
+                        .startDate(dl.getStartDate())
+                        .finishDate(dl.getFinishDate())
+                        .latitude(dl.getLatitude())
+                        .longitude(dl.getLongitude())
+                        .onlineLink(dl.getOnlineLink())
+                        .event(event)
+                        .build())
+                .collect(Collectors.toList());
         event.setDateTimeLocations(dateLocations);
 
         List<EventImage> eventImages = new ArrayList<>();
+        List<String> uploadedPaths = new ArrayList<>();
+
         if (images != null && !images.isEmpty()) {
             boolean first = true;
             for (MultipartFile file : images) {
-                String url = fileService.upload(file);
+                String url;
+                try {
+                    url = fileService.upload(file);
+                    uploadedPaths.add(url);
+                } catch (RuntimeException ex) {
+                    uploadedPaths.forEach(fileService::delete);
+                    throw ex;
+                }
                 eventImages.add(EventImage.builder()
                         .imagePath(url)
                         .isMain(first)
@@ -70,6 +81,7 @@ public class EventServiceImpl implements EventService {
         } else {
             MultipartFile defaultFile = fileService.convertToMultipartImage("tempImage.png");
             String defaultUrl = fileService.upload(defaultFile);
+            uploadedPaths.add(defaultUrl);
             eventImages.add(EventImage.builder()
                     .imagePath(defaultUrl)
                     .isMain(true)
@@ -77,19 +89,29 @@ public class EventServiceImpl implements EventService {
                     .event(event)
                     .build());
         }
+
         event.setImages(eventImages);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    uploadedPaths.forEach(fileService::delete);
+                }
+            }
+        });
 
         Event saved = eventRepo.save(event);
 
         return AddEventDtoResponse.builder()
-            .id(saved.getId())
-            .title(saved.getTitle())
-            .description(saved.getDescription())
-            .open(saved.getIsOpen())
-            .datesLocations(request.getDatesLocations())
-            .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
-            .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
-            .build();
+                .id(saved.getId())
+                .title(saved.getTitle())
+                .description(saved.getDescription())
+                .open(saved.getIsOpen())
+                .datesLocations(request.getDatesLocations())
+                .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
+                .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
+                .build();
     }
 
     @Override
@@ -105,11 +127,28 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new BadRequestException("Event not found"));
 
-        if (event.getImages() != null) {
-            event.getImages().forEach(img -> fileService.delete(img.getImagePath()));
+        User currentUser = userRepo.findByEmail(userEmail)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+        boolean isAdmin = Role.ROLE_ADMIN.equals(currentUser.getRole());
+        boolean isOrganizer = event.getOrganizer() != null
+                && event.getOrganizer().getEmail() != null
+                && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
+        if (!(isAdmin || isOrganizer)) {
+            throw new BadRequestException("Only organizer or admin can delete event");
         }
 
+        List<String> paths = event.getImages() == null
+                ? List.of()
+                : event.getImages().stream().map(EventImage::getImagePath).toList();
+
         eventRepo.delete(event);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                paths.forEach(fileService::delete);
+            }
+        });
     }
 
     @Override
@@ -121,8 +160,10 @@ public class EventServiceImpl implements EventService {
         User currentUser = userRepo.findByEmail(userEmail)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
-        boolean isAdmin = currentUser.getRole().name().equalsIgnoreCase("ROLE_ADMIN");
-        boolean isOrganizer = event.getOrganizer() != null && event.getOrganizer().getEmail().equals(userEmail);
+        boolean isAdmin = Role.ROLE_ADMIN.equals(currentUser.getRole());
+        boolean isOrganizer = event.getOrganizer() != null
+                && event.getOrganizer().getEmail() != null
+                && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
 
         if (!(isAdmin || isOrganizer)) {
             throw new BadRequestException("Only organizer or admin can edit event");
@@ -160,16 +201,25 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
         event.getDateTimeLocations().addAll(updatedDates);
 
+        List<String> oldPaths = event.getImages() == null
+                ? List.of()
+                : event.getImages().stream().map(EventImage::getImagePath).toList();
+
         if (images != null && !images.isEmpty()) {
             if (event.getImages() != null) {
-                event.getImages().forEach(img -> fileService.delete(img.getImagePath()));
                 event.getImages().clear();
             }
 
             boolean first = true;
             List<EventImage> updatedImages = new ArrayList<>();
             for (MultipartFile file : images) {
-                String url = fileService.upload(file);
+                String url;
+                try {
+                    url = fileService.upload(file);
+                } catch (RuntimeException ex) {
+                    oldPaths.forEach(fileService::delete);
+                    throw ex;
+                }
                 updatedImages.add(EventImage.builder()
                         .imagePath(url)
                         .isMain(first)
@@ -182,6 +232,13 @@ public class EventServiceImpl implements EventService {
         }
 
         Event saved = eventRepo.save(event);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                oldPaths.forEach(fileService::delete);
+            }
+        });
 
         return AddEventDtoResponse.builder()
                 .id(saved.getId())
@@ -241,4 +298,3 @@ public class EventServiceImpl implements EventService {
         }
     }
 }
-

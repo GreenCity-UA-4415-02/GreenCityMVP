@@ -43,7 +43,7 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Delete event by id")
     public ResponseEntity<Void> deleteEvent(
             @PathVariable Long id,
@@ -54,7 +54,7 @@ public class EventController {
     }
 
     @PutMapping(value = "/{id}/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Edit existing event (organizer or admin only).")
     public ResponseEntity<AddEventDtoResponse> updateEvent(
             @PathVariable Long id,
