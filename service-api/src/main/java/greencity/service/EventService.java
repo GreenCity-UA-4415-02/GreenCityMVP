@@ -5,7 +5,6 @@ import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.EventDto;
 import greencity.dto.event.UpdateEventDtoRequest;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 
 public interface EventService {

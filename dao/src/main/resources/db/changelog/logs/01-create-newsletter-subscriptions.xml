@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <!-- Fixed by Shankin -->
+    <changeSet id="01-create-newsletter-subscriptions" author="Titenko">
+        <comment>Створення таблиці для підписок на розсилку новин.</comment>
+
+        <createTable tableName="newsletter_subscriptions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subscribed_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="newsletter_subscriptions"
+                             columnNames="email"
+                             constraintName="uc_newsletter_subscriptions_email"/>
+    </changeSet>
+
+    <changeSet id="02-add-fields-to-newsletter-subscriptions" author="Titenko">
+        <comment>added 'status', 'source', 'created_at', 'updated_at' into table newsletter_subscriptions.</comment>
+
+        <addColumn tableName="newsletter_subscriptions">
+            <column name="status" type="VARCHAR(15)" defaultValue="SUBSCRIBED">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="newsletter_subscriptions">
+            <column name="source" type="VARCHAR(15)" defaultValue="LANDING">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="newsletter_subscriptions">
+            <column name="created_at" type="TIMESTAMP WITHOUT TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="newsletter_subscriptions">
+            <column name="updated_at" type="TIMESTAMP WITHOUT TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

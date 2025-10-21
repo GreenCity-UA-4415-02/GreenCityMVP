@@ -21,8 +21,6 @@ class EcoNewsDtoRequestValidatorTest {
         validator.initialize(null);
     }
 
-
-
     @Test
     void isValid_ShouldReturnTrue_WhenTagsValidAndSourceNull() {
         AddEcoNewsDtoRequest dto = getAddEcoNewsDtoRequest();
@@ -59,14 +57,12 @@ class EcoNewsDtoRequestValidatorTest {
         assertTrue(validator.isValid(dto, null));
     }
 
-
     @Test
     void isValid_ShouldReturnTrue_WhenSourceIsRealUrl() {
         AddEcoNewsDtoRequest request = getAddEcoNewsDtoRequest();
         request.setSource("https://eco-lavca.ua/");
         assertTrue(validator.isValid(request, null));
     }
-
 
     @Test
     void isValid_ShouldThrow_WhenTagsEmpty() {
@@ -75,7 +71,7 @@ class EcoNewsDtoRequestValidatorTest {
         dto.setSource(null);
 
         WrongCountOfTagsException exception = assertThrows(WrongCountOfTagsException.class,
-                () -> validator.isValid(dto, null));
+            () -> validator.isValid(dto, null));
         assertNotNull(exception.getMessage());
     }
 
@@ -86,8 +82,7 @@ class EcoNewsDtoRequestValidatorTest {
         dto.setSource(null);
 
         WrongCountOfTagsException exception = assertThrows(WrongCountOfTagsException.class,
-                () -> validator.isValid(dto, null));
+            () -> validator.isValid(dto, null));
         assertNotNull(exception.getMessage());
     }
 }
-

@@ -34,17 +34,19 @@ public class Event {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<EventDateLocation> dateTimeLocations;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<EventImage> images;
 
     @ManyToMany
     @JoinTable(
-            name = "events_tags",
-            joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+        name = "events_tags",
+        joinColumns = @JoinColumn(name = "event_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @ToString.Exclude
     private List<Tag> tags;
 
     @ManyToOne

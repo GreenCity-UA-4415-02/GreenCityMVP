@@ -15,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.Operation;
-
 import java.security.Principal;
 import java.util.List;
 
@@ -23,9 +22,7 @@ import java.util.List;
 @RequestMapping("/events")
 @RequiredArgsConstructor
 public class EventController {
-
     private final EventService eventService;
-
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Create new event with optional images (up to 5 JPG/PNG files)")
@@ -68,5 +65,5 @@ public class EventController {
         AddEventDtoResponse response = eventService.update(id, request, images, principal.getName());
         return ResponseEntity.ok(response);
     }
-
 }
+

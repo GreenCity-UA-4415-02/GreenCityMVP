@@ -16,8 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.security.Principal;
@@ -53,7 +51,10 @@ class EventControllerTest {
 
     @Test
     void createEventTest() throws Exception {
-        TagUaEnDto tag = TagUaEnDto.builder().nameUa("Назва UA").nameEn("Name EN").build();
+        TagUaEnDto tag = TagUaEnDto.builder()
+                .nameUa("Назва UA")
+                .nameEn("Name EN")
+                .build();
 
         LocalDateTime futureStart = LocalDateTime.now().plusDays(1);
         LocalDateTime futureFinish = LocalDateTime.now().plusDays(2);
@@ -94,15 +95,13 @@ class EventControllerTest {
                 "event",
                 "event.json",
                 MediaType.APPLICATION_JSON_VALUE,
-                requestJson.getBytes()
-        );
+                requestJson.getBytes());
 
         MockMultipartFile imageFile = new MockMultipartFile(
                 "images",
                 "image.png",
                 MediaType.IMAGE_PNG_VALUE,
-                "fake-image-content".getBytes()
-        );
+                "fake-image-content".getBytes());
 
         mockMvc.perform(multipart("/events/create")
                         .file(jsonFile)
