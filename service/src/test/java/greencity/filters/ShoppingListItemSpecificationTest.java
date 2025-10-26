@@ -66,7 +66,7 @@ class ShoppingListItemSpecificationTest {
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
         when(criteriaBuilder.conjunction()).thenReturn(predicateTrue);
-           }
+    }
 
     @AfterEach
     void tearDown() throws Exception {
@@ -186,7 +186,8 @@ class ShoppingListItemSpecificationTest {
         when(criteriaBuilder.and(predicateTrue, predicateId)).thenReturn(predicateAnd1);
         when(criteriaBuilder.and(predicateAnd1, predicateContent)).thenReturn(predicateAnd2);
 
-        ShoppingListItemSpecification spec = new ShoppingListItemSpecification(Arrays.asList(idCriteria, contentCriteria));
+        ShoppingListItemSpecification spec =
+            new ShoppingListItemSpecification(Arrays.asList(idCriteria, contentCriteria));
         Predicate result = spec.toPredicate(root, criteriaQuery, criteriaBuilder);
 
         assertSame(predicateAnd2, result);
@@ -211,5 +212,3 @@ class ShoppingListItemSpecificationTest {
         verify(criteriaBuilder, never()).and(any(), any());
     }
 }
-
-

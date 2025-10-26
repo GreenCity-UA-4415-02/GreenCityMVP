@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/newsletter")
 @RequiredArgsConstructor
 public class NewsletterController {
-
     private final NewsletterService newsletterService;
     /**
      * Processes a subscription request for the newsletter.
@@ -33,10 +32,11 @@ public class NewsletterController {
      * @return {@link ResponseEntity} with {@link SubscribeResultDto} and HTTP status 200 (OK).
      */
     @Operation(summary = "Subscribe a user to the newsletter",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Successful subscription, body indicates if it's new or already subscribed"),
-                    @ApiResponse(responseCode = "400", description = "Incorrect email or source format")
-            })
+        responses = {
+            @ApiResponse(responseCode = "200",
+                description = "Successful subscription, body indicates if it's new or already subscribed"),
+            @ApiResponse(responseCode = "400", description = "Incorrect email or source format")
+        })
     @PostMapping("/subscribe")
     public ResponseEntity<SubscribeResultDto> subscribe(@Valid @RequestBody SubscriptionDto subscriptionDto) {
         SubscribeResultDto result = newsletterService.subscribe(subscriptionDto);

@@ -61,17 +61,17 @@ public class NewsletterServiceImpl implements NewsletterService {
         }
 
         NewsletterSubscription subscriptionEntity = NewsletterSubscription.builder()
-                                                                          .email(email)
-                                                                          .source(sourceEnum)
-                                                                          .status(SubscriptionStatus.SUBSCRIBED)
-                                                                          .createdAt(ZonedDateTime.now())
-                                                                          .build();
+            .email(email)
+            .source(sourceEnum)
+            .status(SubscriptionStatus.SUBSCRIBED)
+            .createdAt(ZonedDateTime.now())
+            .build();
 
         newsletterSubscriptionRepo.save(subscriptionEntity);
         return SubscribeResultDto.builder()
-                                 .ok(true)
-                                 .alreadySubscribed(false)
-                                 .build();
+            .ok(true)
+            .alreadySubscribed(false)
+            .build();
     }
 
     /**

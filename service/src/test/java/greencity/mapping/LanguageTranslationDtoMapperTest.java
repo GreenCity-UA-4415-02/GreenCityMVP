@@ -21,12 +21,12 @@ class LanguageTranslationDtoMapperTest {
         HabitFactTranslation entity = ModelUtils.getFactTranslation();
 
         LanguageTranslationDTO expected = LanguageTranslationDTO.builder()
-                .content("Content")
-                .language(LanguageDTO.builder()
-                        .id(ModelUtils.getLanguage().getId())
-                        .code(ModelUtils.getLanguage().getCode())
-                        .build())
-                .build();
+            .content("Content")
+            .language(LanguageDTO.builder()
+                .id(ModelUtils.getLanguage().getId())
+                .code(ModelUtils.getLanguage().getCode())
+                .build())
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }

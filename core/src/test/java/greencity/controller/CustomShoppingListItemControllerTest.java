@@ -64,28 +64,28 @@ class CustomShoppingListItemControllerTest {
     @BeforeEach
     void setup() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(customShoppingListItemController)
-                .setControllerAdvice(new CustomExceptionHandler(new DefaultErrorAttributes(), getObjectMapper()))
-                .setCustomArgumentResolvers(
-                        new PageableHandlerMethodArgumentResolver(),
-                        new CurrentUserIdHandler())
-                .build();
+            .setControllerAdvice(new CustomExceptionHandler(new DefaultErrorAttributes(), getObjectMapper()))
+            .setCustomArgumentResolvers(
+                new PageableHandlerMethodArgumentResolver(),
+                new CurrentUserIdHandler())
+            .build();
     }
 
     private static class CurrentUserIdHandler implements HandlerMethodArgumentResolver {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
             return parameter.hasParameterAnnotation(CurrentUserId.class)
-                    && Long.class.isAssignableFrom(parameter.getParameterType());
+                && Long.class.isAssignableFrom(parameter.getParameterType());
 
         }
 
         @Override
         public Object resolveArgument(MethodParameter parameter,
-                                      ModelAndViewContainer mavContainer,
-                                      NativeWebRequest webRequest,
-                                      WebDataBinderFactory binderFactory) throws Exception {
+            ModelAndViewContainer mavContainer,
+            NativeWebRequest webRequest,
+            WebDataBinderFactory binderFactory) throws Exception {
             Map<String, String> uriVars = (Map<String, String>) webRequest.getAttribute(
-                    HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+                HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
             return Long.valueOf(uriVars.get("userId")) == USER_ID;
         }
     }
@@ -95,17 +95,16 @@ class CustomShoppingListItemControllerTest {
     void getAllAvailable_ok() throws Exception {
         CustomShoppingListItemResponseDto dto = getCustomShoppingListItemResponseDto();
         when(customShoppingListItemService.findAllAvailableCustomShoppingListItems(eq(USER_ID), eq(HABIT_ID)))
-                .thenReturn(List.of(dto));
-
+            .thenReturn(List.of(dto));
 
         mockMvc.perform(get(customShoppingListItemControllerLink + "/{userId}/{habitId}", USER_ID, HABIT_ID)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].text").value("text"))
-                .andExpect(jsonPath("$[0].status").value("ACTIVE"));
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].text").value("text"))
+            .andExpect(jsonPath("$[0].status").value("ACTIVE"));
 
         verify(customShoppingListItemService).findAllAvailableCustomShoppingListItems(USER_ID, HABIT_ID);
         verifyNoMoreInteractions(customShoppingListItemService);
@@ -115,33 +114,40 @@ class CustomShoppingListItemControllerTest {
     @DisplayName("Post save user custom shopping list items test → 201 Created and list of DTO")
     void saveUserCustomShoppingListItems() throws Exception {
         CustomShoppingListItemSaveRequestDto dtoListItemSaveRequest = CustomShoppingListItemSaveRequestDto.builder()
-                .text("text")
-                .build();
-        BulkSaveCustomShoppingListItemDto dtoRequest = new BulkSaveCustomShoppingListItemDto(List.of(dtoListItemSaveRequest));
+            .text("text")
+            .build();
+        BulkSaveCustomShoppingListItemDto dtoRequest =
+            new BulkSaveCustomShoppingListItemDto(List.of(dtoListItemSaveRequest));
         CustomShoppingListItemResponseDto dtoResponse = getCustomShoppingListItemResponseDto();
 
-        when(customShoppingListItemService.save(any(BulkSaveCustomShoppingListItemDto.class), eq(USER_ID), eq(HABIT_ASSIGN_ID)))
-                .thenReturn(List.of(dtoResponse));
+        when(customShoppingListItemService.save(any(BulkSaveCustomShoppingListItemDto.class), eq(USER_ID),
+            eq(HABIT_ASSIGN_ID)))
+            .thenReturn(List.of(dtoResponse));
 
-        mockMvc.perform(post(customShoppingListItemControllerLink + "/{userId}/{habitAssignId}/custom-shopping-list-items", USER_ID, HABIT_ASSIGN_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(getObjectMapper().writeValueAsString(dtoRequest))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].text").value("text"));
+        mockMvc
+            .perform(post(customShoppingListItemControllerLink + "/{userId}/{habitAssignId}/custom-shopping-list-items",
+                USER_ID, HABIT_ASSIGN_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getObjectMapper().writeValueAsString(dtoRequest))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].text").value("text"));
 
-        verify(customShoppingListItemService).save(any(BulkSaveCustomShoppingListItemDto.class), eq(USER_ID), eq(HABIT_ASSIGN_ID));
+        verify(customShoppingListItemService).save(any(BulkSaveCustomShoppingListItemDto.class), eq(USER_ID),
+            eq(HABIT_ASSIGN_ID));
     }
 
     @Test
     @DisplayName("Post save user custom shopping list items without body test → 400 Bad Request")
     void save_missingBody_badRequest() throws Exception {
-        mockMvc.perform(post(customShoppingListItemControllerLink + "/{userId}/{habitAssignId}/custom-shopping-list-items", USER_ID, HABIT_ASSIGN_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        mockMvc
+            .perform(post(customShoppingListItemControllerLink + "/{userId}/{habitAssignId}/custom-shopping-list-items",
+                USER_ID, HABIT_ASSIGN_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
 
         verifyNoInteractions(customShoppingListItemService);
     }
@@ -150,14 +156,15 @@ class CustomShoppingListItemControllerTest {
     @DisplayName("Patch update item status test → 200 OK and DTO")
     void updateStatus_ok() throws Exception {
         String status = "INPROGRESS";
-        when(customShoppingListItemService.updateItemStatus(USER_ID, ITEM_ID, status)).thenReturn(getCustomShoppingListItemResponseDto());
+        when(customShoppingListItemService.updateItemStatus(USER_ID, ITEM_ID, status))
+            .thenReturn(getCustomShoppingListItemResponseDto());
 
         mockMvc.perform(patch(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("itemId", String.valueOf(ITEM_ID))
-                        .param("status", status)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+            .param("itemId", String.valueOf(ITEM_ID))
+            .param("status", status)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
 
         verify(customShoppingListItemService).updateItemStatus(USER_ID, ITEM_ID, status);
     }
@@ -166,18 +173,18 @@ class CustomShoppingListItemControllerTest {
     @ValueSource(strings = {"ACTIVE", "DONE", "DISABLED", "INPROGRESS"})
     void updateStatus_allStatuses_ok(String status) throws Exception {
         CustomShoppingListItemResponseDto dto = CustomShoppingListItemResponseDto.builder()
-                    .id(1L)
-                    .status(ShoppingListItemStatus.valueOf(status))
-                    .text("text")
-                    .build();
+            .id(1L)
+            .status(ShoppingListItemStatus.valueOf(status))
+            .text("text")
+            .build();
         when(customShoppingListItemService.updateItemStatus(USER_ID, ITEM_ID, status)).thenReturn(dto);
 
         mockMvc.perform(patch(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("itemId", String.valueOf(ITEM_ID))
-                        .param("status", status)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(status));
+            .param("itemId", String.valueOf(ITEM_ID))
+            .param("status", status)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(status));
 
         verify(customShoppingListItemService).updateItemStatus(USER_ID, ITEM_ID, status);
         clearInvocations(customShoppingListItemService);
@@ -187,8 +194,8 @@ class CustomShoppingListItemControllerTest {
     @DisplayName("Patch update item status without itemId → 400 Bad Request")
     void updateStatus_missingItemId_badRequest() throws Exception {
         mockMvc.perform(patch(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("status", "DONE"))
-                .andExpect(status().isBadRequest());
+            .param("status", "DONE"))
+            .andExpect(status().isBadRequest());
 
         verifyNoInteractions(customShoppingListItemService);
     }
@@ -197,8 +204,8 @@ class CustomShoppingListItemControllerTest {
     @DisplayName("Patch update item status without status → 400 Bad Request")
     void updateStatus_missingStatus_badRequest() throws Exception {
         mockMvc.perform(patch(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("itemId", "1"))
-                .andExpect(status().isBadRequest());
+            .param("itemId", "1"))
+            .andExpect(status().isBadRequest());
 
         verifyNoInteractions(customShoppingListItemService);
     }
@@ -209,9 +216,9 @@ class CustomShoppingListItemControllerTest {
         doNothing().when(customShoppingListItemService).updateItemStatusToDone(USER_ID, ITEM_ID);
 
         mockMvc.perform(patch(customShoppingListItemControllerLink + "/{userId}/done", USER_ID)
-                        .param("itemId", String.valueOf(ITEM_ID)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+            .param("itemId", String.valueOf(ITEM_ID)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(""));
 
         verify(customShoppingListItemService).updateItemStatusToDone(USER_ID, ITEM_ID);
     }
@@ -220,7 +227,7 @@ class CustomShoppingListItemControllerTest {
     @DisplayName("Patch update item status to done → 400 Bad Request")
     void markDone_missingItemId_badRequest() throws Exception {
         mockMvc.perform(patch(customShoppingListItemControllerLink + "/{userId}/done", USER_ID))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
 
         verifyNoInteractions(customShoppingListItemService);
     }
@@ -233,13 +240,13 @@ class CustomShoppingListItemControllerTest {
         when(customShoppingListItemService.bulkDelete(ids)).thenReturn(List.of(1L, 2L, 3L));
 
         mockMvc.perform(delete(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("ids", ids)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0]").value(1))
-                .andExpect(jsonPath("$[1]").value(2))
-                .andExpect(jsonPath("$[2]").value(3));
+            .param("ids", ids)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[0]").value(1))
+            .andExpect(jsonPath("$[1]").value(2))
+            .andExpect(jsonPath("$[2]").value(3));
 
         verify(customShoppingListItemService).bulkDelete(ids);
     }
@@ -248,11 +255,10 @@ class CustomShoppingListItemControllerTest {
     @DisplayName("Delete custom shopping list items without ids → 400 Bad Request")
     void bulkDelete_missingIds_badRequest() throws Exception {
         mockMvc.perform(delete(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
 
         verifyNoInteractions(customShoppingListItemService);
     }
-
 
     @Test
     @DisplayName("Get all custom shopping items by status with no status → 200 OK")
@@ -276,16 +282,16 @@ class CustomShoppingListItemControllerTest {
     void getByStatus_active_ok() throws Exception {
         String status = "ACTIVE";
         when(customShoppingListItemService.findAllUsersCustomShoppingListItemsByStatus(USER_ID, status))
-                .thenReturn(List.of(getCustomShoppingListItemResponseDto()));
+            .thenReturn(List.of(getCustomShoppingListItemResponseDto()));
 
         mockMvc.perform(get(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("status", status)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].text").value("text"))
-                .andExpect(jsonPath("$[0].status").value("ACTIVE"));
+            .param("status", status)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].text").value("text"))
+            .andExpect(jsonPath("$[0].status").value("ACTIVE"));
 
         verify(customShoppingListItemService).findAllUsersCustomShoppingListItemsByStatus(USER_ID, status);
     }
@@ -294,22 +300,22 @@ class CustomShoppingListItemControllerTest {
     @ValueSource(strings = {"ACTIVE", "DONE", "DISABLED", "INPROGRESS"})
     void getByStatus_various_ok(String status) throws Exception {
         CustomShoppingListItemResponseDto dto = CustomShoppingListItemResponseDto.builder()
-                .id(1L)
-                .status(ShoppingListItemStatus.valueOf(status))
-                .text("text")
-                .build();
+            .id(1L)
+            .status(ShoppingListItemStatus.valueOf(status))
+            .text("text")
+            .build();
 
         when(customShoppingListItemService.findAllUsersCustomShoppingListItemsByStatus(USER_ID, status))
-                .thenReturn(List.of(dto));
+            .thenReturn(List.of(dto));
 
         mockMvc.perform(get(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("status", status)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].text").value("text"))
-                .andExpect(jsonPath("$[0].status").value(status));
+            .param("status", status)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].text").value("text"))
+            .andExpect(jsonPath("$[0].status").value(status));
 
         verify(customShoppingListItemService).findAllUsersCustomShoppingListItemsByStatus(USER_ID, status);
         clearInvocations(customShoppingListItemService);
@@ -320,13 +326,13 @@ class CustomShoppingListItemControllerTest {
     void getByStatus_done_empty_ok() throws Exception {
         String status = "DONE";
         when(customShoppingListItemService.findAllUsersCustomShoppingListItemsByStatus(USER_ID, status))
-                .thenReturn(List.of());
+            .thenReturn(List.of());
 
         mockMvc.perform(get(customShoppingListItemControllerLink + "/{userId}/custom-shopping-list-items", USER_ID)
-                        .param("status", status)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+            .param("status", status)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
 
         verify(customShoppingListItemService).findAllUsersCustomShoppingListItemsByStatus(USER_ID, status);
     }

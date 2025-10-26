@@ -5,17 +5,13 @@ import greencity.dto.habitfact.HabitFactDtoResponse;
 import greencity.dto.habitfact.HabitFactTranslationDto;
 import greencity.dto.habitfact.HabitFactVO;
 import greencity.dto.language.LanguageDTO;
-import greencity.entity.HabitFactTranslation;
 import greencity.enums.FactOfDayStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.util.List;
-
-import static greencity.ModelUtils.getFactTranslation;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -27,26 +23,25 @@ class HabitFactDtoResponseMapperTest {
     @DisplayName("convert: HabitFactTranslation -> HabitFactDtoResponse")
     void convert_ok() {
         HabitFactVO entity = HabitFactVO.builder()
-                .id(1L)
-                .habit(null)
-                .translations(List.of(ModelUtils.getFactTranslationVO()))
-                .build();
+            .id(1L)
+            .habit(null)
+            .translations(List.of(ModelUtils.getFactTranslationVO()))
+            .build();
 
         HabitFactDtoResponse expected = HabitFactDtoResponse.builder()
-                .id(1L)
-                .habit(null)
-                .translations(List.of(
-                        HabitFactTranslationDto.builder()
-                                .id(1L)
-                                .content("Content")
-                                .factOfDayStatus(FactOfDayStatus.CURRENT)
-                                .language(LanguageDTO.builder()
-                                        .id(1L)
-                                        .code("en")
-                                        .build())
-                                .build()
-                ))
-                .build();
+            .id(1L)
+            .habit(null)
+            .translations(List.of(
+                HabitFactTranslationDto.builder()
+                    .id(1L)
+                    .content("Content")
+                    .factOfDayStatus(FactOfDayStatus.CURRENT)
+                    .language(LanguageDTO.builder()
+                        .id(1L)
+                        .code("en")
+                        .build())
+                    .build()))
+            .build();
 
         assertEquals(expected, mapper.convert(entity));
     }
