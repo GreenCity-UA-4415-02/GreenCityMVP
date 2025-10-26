@@ -20,6 +20,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import greencity.dto.event.EventNotificationDto;
 import greencity.dto.event.EventType;
+import greencity.dto.event.EventUpdatePayload;
+import greencity.dto.event.EventActionType;
+import reactor.core.publisher.Sinks;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepo userRepo;
     private final FileService fileService;
     private final EventNotificationProducer notificationProducer;
+    private final Sinks.Many<EventUpdatePayload> eventUpdateSink;
 
     @Override
     @Transactional
@@ -113,6 +117,12 @@ public class EventServiceImpl implements EventService {
                 .eventType(EventType.CREATED)
                 .build());
 
+        eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
+                .id(saved.getId())
+                .title(saved.getTitle())
+                .eventType(EventActionType.CREATED)
+                .build());
+
         return AddEventDtoResponse.builder()
             .id(saved.getId())
             .title(saved.getTitle())
@@ -158,6 +168,12 @@ public class EventServiceImpl implements EventService {
         List<String> paths = event.getImages() == null
             ? List.of()
             : event.getImages().stream().map(EventImage::getImagePath).toList();
+
+        eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .eventType(EventActionType.DELETED)
+                .build());
 
         eventRepo.delete(event);
 
@@ -267,6 +283,12 @@ public class EventServiceImpl implements EventService {
                 oldPaths.forEach(fileService::delete);
             }
         });
+
+        eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
+                .id(saved.getId())
+                .title(saved.getTitle())
+                .eventType(EventActionType.EDITED)
+                .build());
 
         return AddEventDtoResponse.builder()
             .id(saved.getId())
