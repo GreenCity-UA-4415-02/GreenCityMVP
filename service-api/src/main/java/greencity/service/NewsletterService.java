@@ -10,22 +10,24 @@ import greencity.dto.subscription.UnsubscriptionResultDto;
  */
 public interface NewsletterService {
     /**
-     * Handles the subscription request for a user.
-     * The operation is idempotent, meaning if the user is already subscribed,
-     * it will confirm the existing subscription without making changes.
+     * Handles the subscription request for a user. The operation is idempotent,
+     * meaning if the user is already subscribed, it will confirm the existing
+     * subscription without making changes.
      *
-     * @param subscriptionDto DTO containing the user's email and subscription source.
+     * @param subscriptionDto DTO containing the user's email and subscription
+     *                        source.
      * @return {@link SubscribeResultDto} with the result status of the operation.
      */
     SubscribeResultDto subscribe(SubscriptionDto subscriptionDto);
+
     /**
-     * Handles the unsubscription request for a user.
-     * The operation is idempotent, meaning if the user is already unsubscribed
-     * or the email is not found, it will return a success status confirming
-     * the final status is 'unsubscribed'.
+     * Handles the unsubscription request for a user. The operation is idempotent,
+     * meaning if the user is already unsubscribed or the email is not found, it
+     * will return a success status confirming the final status is 'unsubscribed'.
      *
      * @param email The email address to unsubscribe.
-     * @return {@link UnsubscriptionResultDto} with the result status of the operation.
+     * @return {@link UnsubscriptionResultDto} with the result status of the
+     *         operation.
      */
     UnsubscriptionResultDto unsubscribe(String email);
 }

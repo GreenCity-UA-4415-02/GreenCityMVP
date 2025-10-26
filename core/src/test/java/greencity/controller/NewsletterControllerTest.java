@@ -103,24 +103,25 @@ class NewsletterControllerTest {
             .andExpect(status().isBadRequest());
         verify(newsletterService, never()).subscribe(any(SubscriptionDto.class));
     }
+
     @Test
     @DisplayName("Test unsubscribe should return 200 OK")
     void unsubscribeStatus200() throws Exception {
         UnsubscriptionResultDto expectedUnsubscriptionResultDto = UnsubscriptionResultDto.builder()
-                                                                                         .ok(true)
-                                                                                         .alreadySubscribed(true)
-                                                                                         .status("unsubscribed")
-                                                                                         .build();
+            .ok(true)
+            .alreadySubscribed(true)
+            .status("unsubscribed")
+            .build();
         when(newsletterService.unsubscribe(EMAIL)).thenReturn(expectedUnsubscriptionResultDto);
 
         mockMvc.perform(post(NEWS_LETTER_LINK + "/unsubscribe")
-                .content(objectMapper.writeValueAsString(testSubscriptionDto))
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.ok").value(true))
-               .andExpect(jsonPath("$.alreadySubscribed").value(true))
-               .andExpect(jsonPath("$.status").value("unsubscribed"));
+            .content(objectMapper.writeValueAsString(testSubscriptionDto))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ok").value(true))
+            .andExpect(jsonPath("$.alreadySubscribed").value(true))
+            .andExpect(jsonPath("$.status").value("unsubscribed"));
         verify(newsletterService).unsubscribe(EMAIL);
     }
 
@@ -128,14 +129,14 @@ class NewsletterControllerTest {
     @DisplayName("Test unsubscribe should return 400")
     void unsubscribeStatus400() throws Exception {
         SubscriptionDto invalidSubscriptionDto = SubscriptionDto.builder()
-                                                                .email("234@")
-                                                                .source("QR")
-                                                                .build();
+            .email("234@")
+            .source("QR")
+            .build();
         mockMvc.perform(post(NEWS_LETTER_LINK + "/unsubscribe")
-                       .content(objectMapper.writeValueAsString(invalidSubscriptionDto))
-                       .contentType(MediaType.APPLICATION_JSON_VALUE)
-                       .accept(MediaType.APPLICATION_JSON_VALUE))
-               .andExpect(status().isBadRequest());
+            .content(objectMapper.writeValueAsString(invalidSubscriptionDto))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isBadRequest());
         verify(newsletterService, never()).subscribe(any(SubscriptionDto.class));
     }
 }
