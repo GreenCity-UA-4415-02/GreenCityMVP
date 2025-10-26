@@ -2,10 +2,10 @@ package greencity.service;
 
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
-import greencity.entity.Event;
-import greencity.entity.EventDateLocation;
-import greencity.entity.EventImage;
-import greencity.entity.User;
+import greencity.dto.event.EventDto;
+import greencity.dto.event.UpdateEventDtoRequest;
+import greencity.entity.*;
+import greencity.enums.Role;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.repository.EventRepo;
 import greencity.repository.UserRepo;
@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,6 +40,7 @@ public class EventServiceImpl implements EventService {
             .isOpen(request.getOpen())
             .createdAt(LocalDateTime.now())
             .updatedAt(LocalDateTime.now())
+            .organizer(user)
             .build();
 
         List<EventDateLocation> dateLocations = request.getDatesLocations().stream()
@@ -52,16 +55,50 @@ public class EventServiceImpl implements EventService {
             .collect(Collectors.toList());
         event.setDateTimeLocations(dateLocations);
 
-        List<EventImage> eventImages = (images == null ? Collections.emptyList()
-            : images.stream()
-                .map(file -> EventImage.builder()
-                    .imagePath(fileService.upload(file))
-                    .isMain(false)
+        List<EventImage> eventImages = new ArrayList<>();
+        List<String> uploadedPaths = new ArrayList<>();
+
+        if (images != null && !images.isEmpty()) {
+            boolean first = true;
+            for (MultipartFile file : images) {
+                String url;
+                try {
+                    url = fileService.upload(file);
+                    uploadedPaths.add(url);
+                } catch (RuntimeException ex) {
+                    uploadedPaths.forEach(fileService::delete);
+                    throw ex;
+                }
+                eventImages.add(EventImage.builder()
+                    .imagePath(url)
+                    .isMain(first)
                     .createdAt(LocalDateTime.now())
                     .event(event)
-                    .build())
-                .collect(Collectors.toList()));
+                    .build());
+                first = false;
+            }
+        } else {
+            MultipartFile defaultFile = fileService.convertToMultipartImage("tempImage.png");
+            String defaultUrl = fileService.upload(defaultFile);
+            uploadedPaths.add(defaultUrl);
+            eventImages.add(EventImage.builder()
+                .imagePath(defaultUrl)
+                .isMain(true)
+                .createdAt(LocalDateTime.now())
+                .event(event)
+                .build());
+        }
+
         event.setImages(eventImages);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    uploadedPaths.forEach(fileService::delete);
+                }
+            }
+        });
 
         Event saved = eventRepo.save(event);
 
@@ -76,6 +113,154 @@ public class EventServiceImpl implements EventService {
             .build();
     }
 
+    @Override
+    public List<EventDto> getVisibleEvents(String userEmail) {
+        return eventRepo.findAllOpenEvents().stream()
+            .map(this::mapToEventDto)
+            .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteEvent(Long eventId, String userEmail) {
+        Event event = eventRepo.findById(eventId)
+            .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        User currentUser = userRepo.findByEmail(userEmail)
+            .orElseThrow(() -> new BadRequestException("User not found"));
+        boolean isAdmin = Role.ROLE_ADMIN.equals(currentUser.getRole());
+        boolean isOrganizer = event.getOrganizer() != null
+            && event.getOrganizer().getEmail() != null
+            && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
+        if (!(isAdmin || isOrganizer)) {
+            throw new BadRequestException("Only organizer or admin can delete event");
+        }
+
+        List<String> paths = event.getImages() == null
+            ? List.of()
+            : event.getImages().stream().map(EventImage::getImagePath).toList();
+
+        eventRepo.delete(event);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                paths.forEach(fileService::delete);
+            }
+        });
+    }
+
+    @Override
+    @Transactional
+    public AddEventDtoResponse update(Long eventId, UpdateEventDtoRequest request, List<MultipartFile> images,
+        String userEmail) {
+        Event event = eventRepo.findById(eventId)
+            .orElseThrow(() -> new BadRequestException("Event not found"));
+
+        User currentUser = userRepo.findByEmail(userEmail)
+            .orElseThrow(() -> new BadRequestException("User not found"));
+
+        boolean isAdmin = Role.ROLE_ADMIN.equals(currentUser.getRole());
+        boolean isOrganizer = event.getOrganizer() != null
+            && event.getOrganizer().getEmail() != null
+            && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
+
+        if (!(isAdmin || isOrganizer)) {
+            throw new BadRequestException("Only organizer or admin can edit event");
+        }
+
+        boolean hasFutureDates = event.getDateTimeLocations().stream()
+            .anyMatch(dl -> dl.getFinishDate().isAfter(LocalDateTime.now()));
+        if (!hasFutureDates) {
+            throw new BadRequestException("Past events cannot be edited");
+        }
+
+        validateRequest(new AddEventDtoRequest(
+            request.getTitle(),
+            request.getDescription(),
+            request.getOpen(),
+            request.getTags(),
+            request.getDatesLocations()), images);
+
+        event.setTitle(request.getTitle());
+        event.setDescription(request.getDescription());
+        event.setIsOpen(request.getOpen());
+        event.setUpdatedAt(LocalDateTime.now());
+
+        event.getDateTimeLocations().clear();
+        List<EventDateLocation> updatedDates = request.getDatesLocations().stream()
+            .map(dl -> EventDateLocation.builder()
+                .startDate(dl.getStartDate())
+                .finishDate(dl.getFinishDate())
+                .latitude(dl.getLatitude())
+                .longitude(dl.getLongitude())
+                .onlineLink(dl.getOnlineLink())
+                .event(event)
+                .build())
+            .collect(Collectors.toList());
+        event.getDateTimeLocations().addAll(updatedDates);
+
+        List<String> oldPaths = event.getImages() == null
+            ? List.of()
+            : event.getImages().stream().map(EventImage::getImagePath).toList();
+
+        if (images != null && !images.isEmpty()) {
+            if (event.getImages() != null) {
+                event.getImages().clear();
+            }
+
+            boolean first = true;
+            List<EventImage> updatedImages = new ArrayList<>();
+            for (MultipartFile file : images) {
+                String url;
+                try {
+                    url = fileService.upload(file);
+                } catch (RuntimeException ex) {
+                    oldPaths.forEach(fileService::delete);
+                    throw ex;
+                }
+                updatedImages.add(EventImage.builder()
+                    .imagePath(url)
+                    .isMain(first)
+                    .createdAt(LocalDateTime.now())
+                    .event(event)
+                    .build());
+                first = false;
+            }
+            event.setImages(updatedImages);
+        }
+
+        Event saved = eventRepo.save(event);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                oldPaths.forEach(fileService::delete);
+            }
+        });
+
+        return AddEventDtoResponse.builder()
+            .id(saved.getId())
+            .title(saved.getTitle())
+            .description(saved.getDescription())
+            .open(saved.getIsOpen())
+            .datesLocations(request.getDatesLocations())
+            .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
+            .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
+            .build();
+    }
+
+    private EventDto mapToEventDto(Event event) {
+        return EventDto.builder()
+            .id(event.getId())
+            .title(event.getTitle())
+            .description(event.getDescription())
+            .isOpen(event.getIsOpen())
+            .createdAt(event.getCreatedAt())
+            .updatedAt(event.getUpdatedAt())
+            .build();
+    }
+
     private void validateRequest(AddEventDtoRequest dto, List<MultipartFile> images) {
         if (dto.getTitle().length() > 70) {
             throw new BadRequestException("Title must be ≤ 70 chars");
@@ -86,13 +271,14 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("Description must be between 20 and 63206 chars");
         }
 
-        if (dto.getDatesLocations().size() < 1 || dto.getDatesLocations().size() > 7) {
+        if (dto.getDatesLocations().isEmpty() || dto.getDatesLocations().size() > 7) {
             throw new BadRequestException("Must have 1–7 date/time pairs");
         }
 
         if (dto.getDatesLocations().stream().anyMatch(d -> d.getStartDate().isBefore(LocalDateTime.now()))) {
             throw new BadRequestException("Dates must be in the future");
         }
+
         if (images != null) {
             if (images.size() > 5) {
                 throw new BadRequestException("Maximum 5 images allowed");

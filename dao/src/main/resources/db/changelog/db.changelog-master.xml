@@ -179,5 +179,6 @@
     <include file="db/changelog/logs/01-create-newsletter-subscriptions.xml"/>
     <include file="db/changelog/logs/ch-add-missing-events-to-the-events-tables.xml"/>
     <include file="db/changelog/logs/ch-change-users-addColumns-Shankin.xml"/>
+    <include file="db/changelog/logs/add-organizer-to-events-Popov.xml"/>
 </databaseChangeLog>
 

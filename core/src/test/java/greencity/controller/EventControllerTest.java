@@ -50,7 +50,10 @@ class EventControllerTest {
 
     @Test
     void createEventTest() throws Exception {
-        TagUaEnDto tag = TagUaEnDto.builder().nameUa("Назва UA").nameEn("Name EN").build();
+        TagUaEnDto tag = TagUaEnDto.builder()
+            .nameUa("Назва UA")
+            .nameEn("Name EN")
+            .build();
 
         LocalDateTime futureStart = LocalDateTime.now().plusDays(1);
         LocalDateTime futureFinish = LocalDateTime.now().plusDays(2);
@@ -105,6 +108,27 @@ class EventControllerTest {
             .principal(principal)
             .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isCreated());
+
         verify(eventService).create(any(AddEventDtoRequest.class), anyList(), eq(principal.getName()));
+    }
+
+    @Test
+    void createEvent_shouldFail_whenInvalidRequest() throws Exception {
+        AddEventDtoRequest invalidRequest = AddEventDtoRequest.builder().build();
+        String requestJson = objectMapper.writeValueAsString(invalidRequest);
+
+        MockMultipartFile jsonFile = new MockMultipartFile(
+            "event",
+            "event.json",
+            MediaType.APPLICATION_JSON_VALUE,
+            requestJson.getBytes());
+
+        mockMvc.perform(multipart("/events/create")
+            .file(jsonFile)
+            .principal(principal)
+            .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest());
+
+        verify(eventService, never()).create(any(), anyList(), anyString());
     }
 }

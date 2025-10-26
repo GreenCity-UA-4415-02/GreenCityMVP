@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @Builder
 @ToString
-public class AddEventDtoRequest {
+public class UpdateEventDtoRequest {
     @NotBlank
     private String title;
 
