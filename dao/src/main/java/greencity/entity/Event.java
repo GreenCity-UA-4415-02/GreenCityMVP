@@ -48,4 +48,8 @@ public class Event {
         inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @ToString.Exclude
     private List<Tag> tags;
+
+    @ManyToOne
+    @JoinColumn(name = "organizer_id", nullable = false)
+    private User organizer;
 }
