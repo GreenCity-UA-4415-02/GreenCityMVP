@@ -18,6 +18,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import greencity.dto.event.EventNotificationDto;
+import greencity.dto.event.EventType;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepo eventRepo;
     private final UserRepo userRepo;
     private final FileService fileService;
+    private final EventNotificationProducer notificationProducer;
 
     @Override
     @Transactional
@@ -102,6 +105,14 @@ public class EventServiceImpl implements EventService {
 
         Event saved = eventRepo.save(event);
 
+        notificationProducer.sendNotification(EventNotificationDto.builder()
+                .eventId(saved.getId())
+                .eventTitle(saved.getTitle())
+                .organizerEmail(saved.getOrganizer().getEmail())
+                .organizerName(saved.getOrganizer().getName())
+                .eventType(EventType.CREATED)
+                .build());
+
         return AddEventDtoResponse.builder()
             .id(saved.getId())
             .title(saved.getTitle())
@@ -136,11 +147,21 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("Only organizer or admin can delete event");
         }
 
+        EventNotificationDto notification = EventNotificationDto.builder()
+                .eventId(event.getId())
+                .eventTitle(event.getTitle())
+                .organizerEmail(event.getOrganizer().getEmail())
+                .organizerName(event.getOrganizer().getName())
+                .eventType(EventType.DELETED)
+                .build();
+
         List<String> paths = event.getImages() == null
             ? List.of()
             : event.getImages().stream().map(EventImage::getImagePath).toList();
 
         eventRepo.delete(event);
+
+        notificationProducer.sendNotification(notification);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -231,6 +252,14 @@ public class EventServiceImpl implements EventService {
         }
 
         Event saved = eventRepo.save(event);
+
+        notificationProducer.sendNotification(EventNotificationDto.builder()
+                .eventId(saved.getId())
+                .eventTitle(saved.getTitle())
+                .organizerEmail(saved.getOrganizer().getEmail())
+                .organizerName(saved.getOrganizer().getName())
+                .eventType(EventType.EDITED)
+                .build());
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
