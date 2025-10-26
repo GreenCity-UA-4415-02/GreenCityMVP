@@ -14,6 +14,6 @@ public interface EventService {
 
     void deleteEvent(Long eventId, String userEmail);
 
-    AddEventDtoResponse update(Long eventId, UpdateEventDtoRequest request, List<MultipartFile> images, String userEmail);
-
+    AddEventDtoResponse update(Long eventId, UpdateEventDtoRequest request, List<MultipartFile> images,
+        String userEmail);
 }

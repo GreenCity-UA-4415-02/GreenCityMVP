@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import greencity.dto.event.AddEventDtoRequest;
 import greencity.dto.event.AddEventDtoResponse;
 import greencity.dto.event.DateLocationDto;
-import greencity.dto.event.EventDto;
 import greencity.dto.tag.TagUaEnDto;
 import greencity.service.EventService;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,63 +51,63 @@ class EventControllerTest {
     @Test
     void createEventTest() throws Exception {
         TagUaEnDto tag = TagUaEnDto.builder()
-                .nameUa("Назва UA")
-                .nameEn("Name EN")
-                .build();
+            .nameUa("Назва UA")
+            .nameEn("Name EN")
+            .build();
 
         LocalDateTime futureStart = LocalDateTime.now().plusDays(1);
         LocalDateTime futureFinish = LocalDateTime.now().plusDays(2);
 
         DateLocationDto dateLocation = DateLocationDto.builder()
-                .startDate(futureStart)
-                .finishDate(futureFinish)
-                .address("Test Address")
-                .latitude(null)
-                .longitude(null)
-                .onlineLink(null)
-                .build();
+            .startDate(futureStart)
+            .finishDate(futureFinish)
+            .address("Test Address")
+            .latitude(null)
+            .longitude(null)
+            .onlineLink(null)
+            .build();
 
         AddEventDtoRequest request = AddEventDtoRequest.builder()
-                .title("Test Event")
-                .description("This is a valid description for testing purposes.")
-                .open(true)
-                .tags(Collections.singletonList(tag))
-                .datesLocations(Collections.singletonList(dateLocation))
-                .build();
+            .title("Test Event")
+            .description("This is a valid description for testing purposes.")
+            .open(true)
+            .tags(Collections.singletonList(tag))
+            .datesLocations(Collections.singletonList(dateLocation))
+            .build();
 
         AddEventDtoResponse response = AddEventDtoResponse.builder()
-                .id(1L)
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .open(request.getOpen())
-                .datesLocations(request.getDatesLocations())
-                .tagNames(List.of(tag.getNameUa()))
-                .images(Collections.emptyList())
-                .build();
+            .id(1L)
+            .title(request.getTitle())
+            .description(request.getDescription())
+            .open(request.getOpen())
+            .datesLocations(request.getDatesLocations())
+            .tagNames(List.of(tag.getNameUa()))
+            .images(Collections.emptyList())
+            .build();
 
         when(eventService.create(any(AddEventDtoRequest.class), anyList(), anyString()))
-                .thenReturn(response);
+            .thenReturn(response);
 
         String requestJson = objectMapper.writeValueAsString(request);
 
         MockMultipartFile jsonFile = new MockMultipartFile(
-                "event",
-                "event.json",
-                MediaType.APPLICATION_JSON_VALUE,
-                requestJson.getBytes());
+            "event",
+            "event.json",
+            MediaType.APPLICATION_JSON_VALUE,
+            requestJson.getBytes());
 
         MockMultipartFile imageFile = new MockMultipartFile(
-                "images",
-                "image.png",
-                MediaType.IMAGE_PNG_VALUE,
-                "fake-image-content".getBytes());
+            "images",
+            "image.png",
+            MediaType.IMAGE_PNG_VALUE,
+            "fake-image-content".getBytes());
 
         mockMvc.perform(multipart("/events/create")
-                        .file(jsonFile)
-                        .file(imageFile)
-                        .principal(principal)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isCreated());
+            .file(jsonFile)
+            .file(imageFile)
+            .principal(principal)
+            .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isCreated());
 
         verify(eventService).create(any(AddEventDtoRequest.class), anyList(), eq(principal.getName()));
     }
@@ -119,17 +118,16 @@ class EventControllerTest {
         String requestJson = objectMapper.writeValueAsString(invalidRequest);
 
         MockMultipartFile jsonFile = new MockMultipartFile(
-                "event",
-                "event.json",
-                MediaType.APPLICATION_JSON_VALUE,
-                requestJson.getBytes()
-        );
+            "event",
+            "event.json",
+            MediaType.APPLICATION_JSON_VALUE,
+            requestJson.getBytes());
 
         mockMvc.perform(multipart("/events/create")
-                        .file(jsonFile)
-                        .principal(principal)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isBadRequest());
+            .file(jsonFile)
+            .principal(principal)
+            .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest());
 
         verify(eventService, never()).create(any(), anyList(), anyString());
     }

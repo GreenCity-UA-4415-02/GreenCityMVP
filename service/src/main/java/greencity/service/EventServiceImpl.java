@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,27 +32,27 @@ public class EventServiceImpl implements EventService {
         validateRequest(request, images);
 
         User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+            .orElseThrow(() -> new BadRequestException("User not found"));
 
         Event event = Event.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .isOpen(request.getOpen())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .organizer(user)
-                .build();
+            .title(request.getTitle())
+            .description(request.getDescription())
+            .isOpen(request.getOpen())
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .organizer(user)
+            .build();
 
         List<EventDateLocation> dateLocations = request.getDatesLocations().stream()
-                .map(dl -> EventDateLocation.builder()
-                        .startDate(dl.getStartDate())
-                        .finishDate(dl.getFinishDate())
-                        .latitude(dl.getLatitude())
-                        .longitude(dl.getLongitude())
-                        .onlineLink(dl.getOnlineLink())
-                        .event(event)
-                        .build())
-                .collect(Collectors.toList());
+            .map(dl -> EventDateLocation.builder()
+                .startDate(dl.getStartDate())
+                .finishDate(dl.getFinishDate())
+                .latitude(dl.getLatitude())
+                .longitude(dl.getLongitude())
+                .onlineLink(dl.getOnlineLink())
+                .event(event)
+                .build())
+            .collect(Collectors.toList());
         event.setDateTimeLocations(dateLocations);
 
         List<EventImage> eventImages = new ArrayList<>();
@@ -71,11 +70,11 @@ public class EventServiceImpl implements EventService {
                     throw ex;
                 }
                 eventImages.add(EventImage.builder()
-                        .imagePath(url)
-                        .isMain(first)
-                        .createdAt(LocalDateTime.now())
-                        .event(event)
-                        .build());
+                    .imagePath(url)
+                    .isMain(first)
+                    .createdAt(LocalDateTime.now())
+                    .event(event)
+                    .build());
                 first = false;
             }
         } else {
@@ -83,11 +82,11 @@ public class EventServiceImpl implements EventService {
             String defaultUrl = fileService.upload(defaultFile);
             uploadedPaths.add(defaultUrl);
             eventImages.add(EventImage.builder()
-                    .imagePath(defaultUrl)
-                    .isMain(true)
-                    .createdAt(LocalDateTime.now())
-                    .event(event)
-                    .build());
+                .imagePath(defaultUrl)
+                .isMain(true)
+                .createdAt(LocalDateTime.now())
+                .event(event)
+                .build());
         }
 
         event.setImages(eventImages);
@@ -104,42 +103,42 @@ public class EventServiceImpl implements EventService {
         Event saved = eventRepo.save(event);
 
         return AddEventDtoResponse.builder()
-                .id(saved.getId())
-                .title(saved.getTitle())
-                .description(saved.getDescription())
-                .open(saved.getIsOpen())
-                .datesLocations(request.getDatesLocations())
-                .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
-                .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
-                .build();
+            .id(saved.getId())
+            .title(saved.getTitle())
+            .description(saved.getDescription())
+            .open(saved.getIsOpen())
+            .datesLocations(request.getDatesLocations())
+            .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
+            .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
+            .build();
     }
 
     @Override
     public List<EventDto> getVisibleEvents(String userEmail) {
         return eventRepo.findAllOpenEvents().stream()
-                .map(this::mapToEventDto)
-                .toList();
+            .map(this::mapToEventDto)
+            .toList();
     }
 
     @Override
     @Transactional
     public void deleteEvent(Long eventId, String userEmail) {
         Event event = eventRepo.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+            .orElseThrow(() -> new BadRequestException("Event not found"));
 
         User currentUser = userRepo.findByEmail(userEmail)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+            .orElseThrow(() -> new BadRequestException("User not found"));
         boolean isAdmin = Role.ROLE_ADMIN.equals(currentUser.getRole());
         boolean isOrganizer = event.getOrganizer() != null
-                && event.getOrganizer().getEmail() != null
-                && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
+            && event.getOrganizer().getEmail() != null
+            && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
         if (!(isAdmin || isOrganizer)) {
             throw new BadRequestException("Only organizer or admin can delete event");
         }
 
         List<String> paths = event.getImages() == null
-                ? List.of()
-                : event.getImages().stream().map(EventImage::getImagePath).toList();
+            ? List.of()
+            : event.getImages().stream().map(EventImage::getImagePath).toList();
 
         eventRepo.delete(event);
 
@@ -153,35 +152,35 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public AddEventDtoResponse update(Long eventId, UpdateEventDtoRequest request, List<MultipartFile> images, String userEmail) {
+    public AddEventDtoResponse update(Long eventId, UpdateEventDtoRequest request, List<MultipartFile> images,
+        String userEmail) {
         Event event = eventRepo.findById(eventId)
-                .orElseThrow(() -> new BadRequestException("Event not found"));
+            .orElseThrow(() -> new BadRequestException("Event not found"));
 
         User currentUser = userRepo.findByEmail(userEmail)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+            .orElseThrow(() -> new BadRequestException("User not found"));
 
         boolean isAdmin = Role.ROLE_ADMIN.equals(currentUser.getRole());
         boolean isOrganizer = event.getOrganizer() != null
-                && event.getOrganizer().getEmail() != null
-                && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
+            && event.getOrganizer().getEmail() != null
+            && event.getOrganizer().getEmail().equalsIgnoreCase(userEmail);
 
         if (!(isAdmin || isOrganizer)) {
             throw new BadRequestException("Only organizer or admin can edit event");
         }
 
         boolean hasFutureDates = event.getDateTimeLocations().stream()
-                .anyMatch(dl -> dl.getFinishDate().isAfter(LocalDateTime.now()));
+            .anyMatch(dl -> dl.getFinishDate().isAfter(LocalDateTime.now()));
         if (!hasFutureDates) {
             throw new BadRequestException("Past events cannot be edited");
         }
 
         validateRequest(new AddEventDtoRequest(
-                request.getTitle(),
-                request.getDescription(),
-                request.getOpen(),
-                request.getTags(),
-                request.getDatesLocations()
-        ), images);
+            request.getTitle(),
+            request.getDescription(),
+            request.getOpen(),
+            request.getTags(),
+            request.getDatesLocations()), images);
 
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
@@ -190,20 +189,20 @@ public class EventServiceImpl implements EventService {
 
         event.getDateTimeLocations().clear();
         List<EventDateLocation> updatedDates = request.getDatesLocations().stream()
-                .map(dl -> EventDateLocation.builder()
-                        .startDate(dl.getStartDate())
-                        .finishDate(dl.getFinishDate())
-                        .latitude(dl.getLatitude())
-                        .longitude(dl.getLongitude())
-                        .onlineLink(dl.getOnlineLink())
-                        .event(event)
-                        .build())
-                .collect(Collectors.toList());
+            .map(dl -> EventDateLocation.builder()
+                .startDate(dl.getStartDate())
+                .finishDate(dl.getFinishDate())
+                .latitude(dl.getLatitude())
+                .longitude(dl.getLongitude())
+                .onlineLink(dl.getOnlineLink())
+                .event(event)
+                .build())
+            .collect(Collectors.toList());
         event.getDateTimeLocations().addAll(updatedDates);
 
         List<String> oldPaths = event.getImages() == null
-                ? List.of()
-                : event.getImages().stream().map(EventImage::getImagePath).toList();
+            ? List.of()
+            : event.getImages().stream().map(EventImage::getImagePath).toList();
 
         if (images != null && !images.isEmpty()) {
             if (event.getImages() != null) {
@@ -221,11 +220,11 @@ public class EventServiceImpl implements EventService {
                     throw ex;
                 }
                 updatedImages.add(EventImage.builder()
-                        .imagePath(url)
-                        .isMain(first)
-                        .createdAt(LocalDateTime.now())
-                        .event(event)
-                        .build());
+                    .imagePath(url)
+                    .isMain(first)
+                    .createdAt(LocalDateTime.now())
+                    .event(event)
+                    .build());
                 first = false;
             }
             event.setImages(updatedImages);
@@ -241,25 +240,25 @@ public class EventServiceImpl implements EventService {
         });
 
         return AddEventDtoResponse.builder()
-                .id(saved.getId())
-                .title(saved.getTitle())
-                .description(saved.getDescription())
-                .open(saved.getIsOpen())
-                .datesLocations(request.getDatesLocations())
-                .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
-                .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
-                .build();
+            .id(saved.getId())
+            .title(saved.getTitle())
+            .description(saved.getDescription())
+            .open(saved.getIsOpen())
+            .datesLocations(request.getDatesLocations())
+            .images(saved.getImages().stream().map(EventImage::getImagePath).toList())
+            .tagNames(request.getTags().stream().map(t -> t.getNameUa()).toList())
+            .build();
     }
 
     private EventDto mapToEventDto(Event event) {
         return EventDto.builder()
-                .id(event.getId())
-                .title(event.getTitle())
-                .description(event.getDescription())
-                .is_open(event.getIsOpen())
-                .created_at(event.getCreatedAt())
-                .updated_at(event.getUpdatedAt())
-                .build();
+            .id(event.getId())
+            .title(event.getTitle())
+            .description(event.getDescription())
+            .isOpen(event.getIsOpen())
+            .createdAt(event.getCreatedAt())
+            .updatedAt(event.getUpdatedAt())
+            .build();
     }
 
     private void validateRequest(AddEventDtoRequest dto, List<MultipartFile> images) {

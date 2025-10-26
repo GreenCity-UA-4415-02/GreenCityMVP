@@ -23,14 +23,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;
+
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Create new event with optional images (up to 5 JPG/PNG files)")
     public ResponseEntity<AddEventDtoResponse> createEvent(
-            @Valid @RequestPart("event") AddEventDtoRequest request,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images,
-            @AuthenticationPrincipal Principal principal
-    ) {
+        @Valid @RequestPart("event") AddEventDtoRequest request,
+        @RequestPart(value = "images", required = false) List<MultipartFile> images,
+        @AuthenticationPrincipal Principal principal) {
         AddEventDtoResponse response = eventService.create(request, images, principal.getName());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -46,9 +46,8 @@ public class EventController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Delete event by id")
     public ResponseEntity<Void> deleteEvent(
-            @PathVariable Long id,
-            @AuthenticationPrincipal Principal principal
-    ) {
+        @PathVariable Long id,
+        @AuthenticationPrincipal Principal principal) {
         eventService.deleteEvent(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
@@ -57,13 +56,11 @@ public class EventController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Edit existing event (organizer or admin only).")
     public ResponseEntity<AddEventDtoResponse> updateEvent(
-            @PathVariable Long id,
-            @Valid @RequestPart("event") UpdateEventDtoRequest request,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images,
-            @AuthenticationPrincipal Principal principal
-    ) {
+        @PathVariable Long id,
+        @Valid @RequestPart("event") UpdateEventDtoRequest request,
+        @RequestPart(value = "images", required = false) List<MultipartFile> images,
+        @AuthenticationPrincipal Principal principal) {
         AddEventDtoResponse response = eventService.update(id, request, images, principal.getName());
         return ResponseEntity.ok(response);
     }
 }
-

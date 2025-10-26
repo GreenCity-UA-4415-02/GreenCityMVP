@@ -12,27 +12,25 @@ class EventDtoTest {
     @Test
     void addEventDtoRequest_builder_getters_setters() {
         AddEventDtoRequest dto = AddEventDtoRequest.builder()
-                .title("Test Event")
-                .description("Description")
-                .open(true)
-                .tags(Collections.singletonList(
-                        TagUaEnDto.builder()
-                                .id(1L)
-                                .nameUa("ТегUA")
-                                .nameEn("TagEN")
-                                .build()
-                ))
-                .datesLocations(Collections.singletonList(
-                        DateLocationDto.builder()
-                                .startDate(LocalDateTime.now())
-                                .finishDate(LocalDateTime.now().plusHours(2))
-                                .address("Kyiv")
-                                .latitude(new BigDecimal("50.4501"))
-                                .longitude(new BigDecimal("30.5234"))
-                                .onlineLink("https://example.com")
-                                .build()
-                ))
-                .build();
+            .title("Test Event")
+            .description("Description")
+            .open(true)
+            .tags(Collections.singletonList(
+                TagUaEnDto.builder()
+                    .id(1L)
+                    .nameUa("ТегUA")
+                    .nameEn("TagEN")
+                    .build()))
+            .datesLocations(Collections.singletonList(
+                DateLocationDto.builder()
+                    .startDate(LocalDateTime.now())
+                    .finishDate(LocalDateTime.now().plusHours(2))
+                    .address("Kyiv")
+                    .latitude(new BigDecimal("50.4501"))
+                    .longitude(new BigDecimal("30.5234"))
+                    .onlineLink("https://example.com")
+                    .build()))
+            .build();
 
         String title = dto.getTitle();
         String desc = dto.getDescription();
@@ -48,20 +46,19 @@ class EventDtoTest {
     @Test
     void addEventDtoResponse_builder_getters_setters() {
         AddEventDtoResponse response = AddEventDtoResponse.builder()
-                .id(10L)
-                .title("Response Event")
-                .description("Desc")
-                .open(true)
-                .tagNames(Collections.singletonList("TagEN"))
-                .datesLocations(Collections.singletonList(
-                        DateLocationDto.builder()
-                                .startDate(LocalDateTime.now())
-                                .finishDate(LocalDateTime.now().plusHours(1))
-                                .address("Kyiv")
-                                .build()
-                ))
-                .images(Collections.singletonList("image.png"))
-                .build();
+            .id(10L)
+            .title("Response Event")
+            .description("Desc")
+            .open(true)
+            .tagNames(Collections.singletonList("TagEN"))
+            .datesLocations(Collections.singletonList(
+                DateLocationDto.builder()
+                    .startDate(LocalDateTime.now())
+                    .finishDate(LocalDateTime.now().plusHours(1))
+                    .address("Kyiv")
+                    .build()))
+            .images(Collections.singletonList("image.png"))
+            .build();
 
         Long id = response.getId();
         String title = response.getTitle();
@@ -78,13 +75,13 @@ class EventDtoTest {
     @Test
     void dateLocationDto_builder_getters_setters() {
         DateLocationDto dto = DateLocationDto.builder()
-                .startDate(LocalDateTime.now())
-                .finishDate(LocalDateTime.now().plusHours(3))
-                .address("Kyiv")
-                .latitude(new BigDecimal("50.4501"))
-                .longitude(new BigDecimal("30.5234"))
-                .onlineLink("https://example.com")
-                .build();
+            .startDate(LocalDateTime.now())
+            .finishDate(LocalDateTime.now().plusHours(3))
+            .address("Kyiv")
+            .latitude(new BigDecimal("50.4501"))
+            .longitude(new BigDecimal("30.5234"))
+            .onlineLink("https://example.com")
+            .build();
 
         System.out.println(dto.getAddress());
         System.out.println(dto.getLatitude());
@@ -95,10 +92,10 @@ class EventDtoTest {
     @Test
     void tagUaEnDto_builder_getters_setters() {
         TagUaEnDto tag = TagUaEnDto.builder()
-                .id(1L)
-                .nameUa("ТегUA")
-                .nameEn("TagEN")
-                .build();
+            .id(1L)
+            .nameUa("ТегUA")
+            .nameEn("TagEN")
+            .build();
 
         System.out.println(tag.getId());
         System.out.println(tag.getNameUa());
