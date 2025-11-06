@@ -37,12 +37,12 @@ public interface EventAttenderRepo extends JpaRepository<EventAttender, EventAtt
                  ELSE e.id END ASC
         """)
     Page<Event> findJoinedEventsWithSorting(
-            @Param("userId") Long userId,
-            @Param("currentTime") LocalDateTime currentTime,
-            @Param("eventType") String eventType,
-            @Param("userLatitude") Double userLatitude,
-            @Param("userLongitude") Double userLongitude,
-            Pageable pageable);
+        @Param("userId") Long userId,
+        @Param("currentTime") LocalDateTime currentTime,
+        @Param("eventType") String eventType,
+        @Param("userLatitude") Double userLatitude,
+        @Param("userLongitude") Double userLongitude,
+        Pageable pageable);
 
     @Query("""
         SELECT DISTINCT e FROM Event e

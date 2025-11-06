@@ -25,42 +25,42 @@ public final class EventStatusCalculator {
     public static EventStatusResult computeStatus(List<EventDateLocation> dateLocations, LocalDateTime now) {
         if (dateLocations == null || dateLocations.isEmpty()) {
             return EventStatusResult.builder()
-                    .status(EventStatus.PASSED)
-                    .nearestStart(null)
-                    .nearestFinish(null)
-                    .build();
-        }
-
-        Optional<EventDateLocation> liveOccurrence = dateLocations.stream()
-                .filter(loc -> !now.isBefore(loc.getStartDate()) && !now.isAfter(loc.getFinishDate()))
-                .findFirst();
-
-        if (liveOccurrence.isPresent()) {
-            EventDateLocation live = liveOccurrence.get();
-            return EventStatusResult.builder()
-                    .status(EventStatus.LIVE)
-                    .nearestStart(live.getStartDate())
-                    .nearestFinish(live.getFinishDate())
-                    .build();
-        }
-
-        Optional<EventDateLocation> nextOccurrence = dateLocations.stream()
-                .filter(loc -> now.isBefore(loc.getStartDate()))
-                .min((a, b) -> a.getStartDate().compareTo(b.getStartDate()));
-
-        if (nextOccurrence.isPresent()) {
-            EventDateLocation next = nextOccurrence.get();
-            return EventStatusResult.builder()
-                    .status(EventStatus.UPCOMING)
-                    .nearestStart(next.getStartDate())
-                    .nearestFinish(next.getFinishDate())
-                    .build();
-        }
-
-        return EventStatusResult.builder()
                 .status(EventStatus.PASSED)
                 .nearestStart(null)
                 .nearestFinish(null)
                 .build();
+        }
+
+        Optional<EventDateLocation> liveOccurrence = dateLocations.stream()
+            .filter(loc -> !now.isBefore(loc.getStartDate()) && !now.isAfter(loc.getFinishDate()))
+            .findFirst();
+
+        if (liveOccurrence.isPresent()) {
+            EventDateLocation live = liveOccurrence.get();
+            return EventStatusResult.builder()
+                .status(EventStatus.LIVE)
+                .nearestStart(live.getStartDate())
+                .nearestFinish(live.getFinishDate())
+                .build();
+        }
+
+        Optional<EventDateLocation> nextOccurrence = dateLocations.stream()
+            .filter(loc -> now.isBefore(loc.getStartDate()))
+            .min((a, b) -> a.getStartDate().compareTo(b.getStartDate()));
+
+        if (nextOccurrence.isPresent()) {
+            EventDateLocation next = nextOccurrence.get();
+            return EventStatusResult.builder()
+                .status(EventStatus.UPCOMING)
+                .nearestStart(next.getStartDate())
+                .nearestFinish(next.getFinishDate())
+                .build();
+        }
+
+        return EventStatusResult.builder()
+            .status(EventStatus.PASSED)
+            .nearestStart(null)
+            .nearestFinish(null)
+            .build();
     }
 }

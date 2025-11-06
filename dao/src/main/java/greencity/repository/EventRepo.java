@@ -20,20 +20,19 @@ public interface EventRepo extends JpaRepository<Event, Long> {
     Optional<Event> findById(Long id);
 
     @Query(
-            value = """
-        SELECT e FROM Event e
-        WHERE e.organizer.id = :organizerId
-        ORDER BY (SELECT MIN(l.startDate) FROM e.dateTimeLocations l) ASC
-        """,
-            countQuery = """
-           SELECT COUNT(e) FROM Event e
-           WHERE e.organizer.id = :organizerId
-        """
-    )
+        value = """
+            SELECT e FROM Event e
+            WHERE e.organizer.id = :organizerId
+            ORDER BY (SELECT MIN(l.startDate) FROM e.dateTimeLocations l) ASC
+            """,
+        countQuery = """
+               SELECT COUNT(e) FROM Event e
+               WHERE e.organizer.id = :organizerId
+            """)
     Page<Event> findByOrganizerIdOrderByNearestStart(@Param("organizerId") Long organizerId, Pageable pageable);
 
     @Query(
-            value = """
+        value = """
             SELECT e FROM Event e
             WHERE e.id IN (
                 SELECT e2.id FROM Event e2 WHERE e2.organizer.id = :userId
@@ -42,7 +41,7 @@ public interface EventRepo extends JpaRepository<Event, Long> {
             )
             ORDER BY (SELECT MIN(l.startDate) FROM e.dateTimeLocations l) ASC
             """,
-            countQuery = """
+        countQuery = """
             SELECT COUNT(e.id) FROM Event e
             WHERE e.id IN (
                 SELECT e2.id FROM Event e2 WHERE e2.organizer.id = :userId

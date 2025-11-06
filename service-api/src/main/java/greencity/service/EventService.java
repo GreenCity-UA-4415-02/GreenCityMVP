@@ -24,7 +24,7 @@ public interface EventService {
     EventDto getEventById(Long eventId);
 
     Page<EventPreviewDto> getMyEvents(Long userId, EventType eventType, EventStatus status,
-                                      Double userLatitude, Double userLongitude, Pageable pageable);
+        Double userLatitude, Double userLongitude, Pageable pageable);
 
     Page<EventPreviewDto> getMyCreatedEvents(Long userId, EventStatus status, Pageable pageable);
 
