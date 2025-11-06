@@ -180,5 +180,8 @@
     <include file="db/changelog/logs/ch-add-missing-events-to-the-events-tables.xml"/>
     <include file="db/changelog/logs/ch-change-users-addColumns-Shankin.xml"/>
     <include file="db/changelog/logs/add-organizer-to-events-Popov.xml"/>
+    <include file="db/changelog/logs/ch-add-event-attenders-table-Shankin.xml"/>
+    <include file="db/changelog/logs/ch-add-events-dates-locations-indexes-Shankin.xml"/>
+    <include file="db/changelog/logs/ch-add-event-status-calculation-function-Shankin.xml"/>
 </databaseChangeLog>
 
