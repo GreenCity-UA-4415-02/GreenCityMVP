@@ -33,12 +33,28 @@
         <mockito-core.version>5.10.0</mockito-core.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
         <modelmapper.version>3.2.0</modelmapper.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+        <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
         <checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
         <formatter.maven.plugin.version>2.23.0</formatter.maven.plugin.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.sources>src/main/java</sonar.sources>
+        <sonar.java.binaries>target/classes</sonar.java.binaries>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.exclusions>**/config/*</sonar.exclusions>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml
+        <sonar.exclusions>
+            **/config/*,
+            **/enums/*,
+            **/dto/*,
+            **/exception/*,
+            **/exceptions/*,
+            **/entity/*,
+            **/generated/**
+        </sonar.exclusions>
+        <sonar.organization>greencity-ua-4415-02</sonar.organization>
+        <sonar.projectKey>GreenCity-UA-4415-02_GreenCityMVP</sonar.projectKey>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            jacoco-report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <sonar.language>java</sonar.language>
         <test.containers.version>1.19.4</test.containers.version>
@@ -50,6 +66,11 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+            </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -75,6 +96,17 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>aggregate-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/site/jacoco-aggregate</outputDirectory>
+                            <outputEncoding>UTF-8</outputEncoding>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
