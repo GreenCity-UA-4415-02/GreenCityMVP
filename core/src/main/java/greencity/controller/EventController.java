@@ -144,25 +144,25 @@ public class EventController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{eventId}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Delete event by id")
     public ResponseEntity<Void> deleteEvent(
-        @PathVariable Long id,
+        @PathVariable Long eventId,
         @AuthenticationPrincipal Principal principal) {
-        eventService.deleteEvent(id, principal.getName());
+        eventService.deleteEvent(eventId, principal.getName());
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/{id}/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Edit existing event (organizer or admin only).")
     public ResponseEntity<AddEventDtoResponse> updateEvent(
-        @PathVariable Long id,
+        @PathVariable Long eventId,
         @Valid @RequestPart("event") UpdateEventDtoRequest request,
         @RequestPart(value = "images", required = false) List<MultipartFile> images,
         @AuthenticationPrincipal Principal principal) {
-        AddEventDtoResponse response = eventService.update(id, request, images, principal.getName());
+        AddEventDtoResponse response = eventService.update(eventId, request, images, principal.getName());
         return ResponseEntity.ok(response);
     }
 
