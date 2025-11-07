@@ -609,12 +609,4 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         return new HashMap<>(errorAttributes.getErrorAttributes(webRequest,
             ErrorAttributeOptions.of(ErrorAttributeOptions.Include.MESSAGE)));
     }
-
-    @ExceptionHandler(Exception.class)
-    public final ResponseEntity<Object> handleUnexpectedException(Exception ex, WebRequest request) {
-        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
-        exceptionResponse.setMessage("Internal server error");
-        log.error("Unhandled exception", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionResponse);
-    }
 }

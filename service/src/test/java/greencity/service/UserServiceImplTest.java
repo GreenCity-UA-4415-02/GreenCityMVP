@@ -15,7 +15,6 @@ import greencity.exception.exceptions.LowRoleLevelException;
 import greencity.exception.exceptions.WrongEmailException;
 import greencity.exception.exceptions.WrongIdException;
 import greencity.repository.UserRepo;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,8 +26,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -81,7 +82,7 @@ class UserServiceImplTest {
 
     @Test
     void checkIfTheUserIsOnlineEqualsTrueTest() {
-        ReflectionTestUtils.setField(userService, "timeAfterLastActivity", 300000L);
+        ReflectionTestUtils.setField(userService, "timeAfterLastActivity", 300000);
         Timestamp userLastActivityTime = Timestamp.valueOf(LocalDateTime.now());
         User user = ModelUtils.getUser();
 

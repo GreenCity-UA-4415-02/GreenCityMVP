@@ -1,28 +1,19 @@
 package greencity.dto.event;
 
-import greencity.enums.EventStatus;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Getter
 @Setter
-@EqualsAndHashCode
+@Builder
+@ToString
 public class EventDto {
     private Long id;
     private String title;
     private String description;
-    private boolean isOpen;
-    private Long organizerId;
-    private String titleImage;
+    private Boolean isOpen;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<EventDateLocationDto> datesLocations;
-    private List<String> imageUrls;
-    private EventStatus status;
-    private LocalDateTime nearestStart;
-    private LocalDateTime nearestFinish;
 }
