@@ -326,10 +326,6 @@ public class EventServiceImpl implements EventService {
             .eventType(greencity.dto.event.EventType.DELETED)
             .build();
 
-        List<String> paths = event.getImages() == null
-            ? List.of()
-            : event.getImages().stream().map(EventImage::getImagePath).toList();
-
         eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
             .id(event.getId())
             .title(event.getTitle())
@@ -339,6 +335,12 @@ public class EventServiceImpl implements EventService {
         eventRepo.delete(event);
 
         notificationProducer.sendNotification(notification);
+
+        List<String> paths = event.getImages() == null
+            ? List.of()
+            : event.getImages().stream()
+                .map(EventImage::getImagePath)
+                .toList();
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override

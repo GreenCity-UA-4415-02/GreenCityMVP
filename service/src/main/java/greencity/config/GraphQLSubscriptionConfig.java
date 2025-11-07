@@ -7,7 +7,6 @@ import reactor.core.publisher.Sinks;
 
 @Configuration
 public class GraphQLSubscriptionConfig {
-
     /**
      * Створює єдиний, багатоадресний "транслятор" (Publisher/Sink) для оновлень
      * подій. Всі підписники будуть отримувати дані з цього джерела. .multicast() -

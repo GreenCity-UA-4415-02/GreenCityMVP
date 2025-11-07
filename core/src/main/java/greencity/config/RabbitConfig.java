@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableRabbit
 public class RabbitConfig {
-
     public static final String EXCHANGE_NAME = "event-notification-exchange";
     public static final String ROUTING_KEY = "event.notification.key";
     public static final String QUEUE_NAME = "event-notification-queue";

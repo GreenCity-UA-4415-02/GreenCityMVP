@@ -21,7 +21,6 @@ public class EventNotificationProducer {
     private String routingKey;
 
     public void sendNotification(EventNotificationDto notification) {
-
         try {
             rabbitTemplate.convertAndSend(exchange, routingKey, notification);
 
@@ -29,7 +28,6 @@ public class EventNotificationProducer {
                 notification.getEventId(),
                 notification.getEventTitle(),
                 notification.getEventType());
-
         } catch (AmqpException e) {
             log.error("Failed to send event notification: eventId={}. Error: {}",
                 notification.getEventId(), e.getMessage());

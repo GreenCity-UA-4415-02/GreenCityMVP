@@ -10,7 +10,6 @@ import reactor.core.publisher.Sinks;
 @Controller
 @RequiredArgsConstructor
 public class EventSubscriptionController {
-
     private final Sinks.Many<EventUpdatePayload> eventUpdateSink;
 
     /**
