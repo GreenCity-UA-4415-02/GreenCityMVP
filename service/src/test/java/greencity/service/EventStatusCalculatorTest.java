@@ -19,10 +19,10 @@ class EventStatusCalculatorTest {
     void computeStatus_WithLiveOccurrence_ReturnsLive() {
         LocalDateTime now = LocalDateTime.now();
         List<EventDateLocation> dateLocations = createDateLocations(
-                now.minusHours(1), now.plusHours(1));
+            now.minusHours(1), now.plusHours(1));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.LIVE, result.getStatus());
         assertNotNull(result.getNearestStart());
@@ -35,10 +35,10 @@ class EventStatusCalculatorTest {
     void computeStatus_WithUpcomingOccurrence_ReturnsUpcoming() {
         LocalDateTime now = LocalDateTime.now();
         List<EventDateLocation> dateLocations = createDateLocations(
-                now.plusDays(1), now.plusDays(1).plusHours(2));
+            now.plusDays(1), now.plusDays(1).plusHours(2));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.UPCOMING, result.getStatus());
         assertNotNull(result.getNearestStart());
@@ -51,10 +51,10 @@ class EventStatusCalculatorTest {
     void computeStatus_WithPassedOccurrence_ReturnsPassed() {
         LocalDateTime now = LocalDateTime.now();
         List<EventDateLocation> dateLocations = createDateLocations(
-                now.minusDays(2), now.minusDays(1));
+            now.minusDays(2), now.minusDays(1));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.PASSED, result.getStatus());
         assertNull(result.getNearestStart());
@@ -67,11 +67,11 @@ class EventStatusCalculatorTest {
         Event event = Event.builder().id(1L).build();
 
         List<EventDateLocation> dateLocations = Arrays.asList(
-                createDateLocation(event, 1L, now.minusHours(1), now.plusHours(1)),
-                createDateLocation(event, 2L, now.plusDays(1), now.plusDays(1).plusHours(2)));
+            createDateLocation(event, 1L, now.minusHours(1), now.plusHours(1)),
+            createDateLocation(event, 2L, now.plusDays(1), now.plusDays(1).plusHours(2)));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.LIVE, result.getStatus());
         assertEquals(dateLocations.get(0).getStartDate(), result.getNearestStart());
@@ -84,12 +84,12 @@ class EventStatusCalculatorTest {
         Event event = Event.builder().id(1L).build();
 
         List<EventDateLocation> dateLocations = Arrays.asList(
-                createDateLocation(event, 1L, now.minusDays(1), now.minusDays(1).plusHours(2)),
-                createDateLocation(event, 2L, now.minusHours(1), now.plusHours(1)),
-                createDateLocation(event, 3L, now.plusDays(1), now.plusDays(1).plusHours(2)));
+            createDateLocation(event, 1L, now.minusDays(1), now.minusDays(1).plusHours(2)),
+            createDateLocation(event, 2L, now.minusHours(1), now.plusHours(1)),
+            createDateLocation(event, 3L, now.plusDays(1), now.plusDays(1).plusHours(2)));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.LIVE, result.getStatus());
         assertEquals(dateLocations.get(1).getStartDate(), result.getNearestStart());
@@ -102,12 +102,12 @@ class EventStatusCalculatorTest {
         Event event = Event.builder().id(1L).build();
 
         List<EventDateLocation> dateLocations = Arrays.asList(
-                createDateLocation(event, 1L, now.plusDays(3), now.plusDays(3).plusHours(2)),
-                createDateLocation(event, 2L, now.plusDays(1), now.plusDays(1).plusHours(2)),
-                createDateLocation(event, 3L, now.plusDays(5), now.plusDays(5).plusHours(2)));
+            createDateLocation(event, 1L, now.plusDays(3), now.plusDays(3).plusHours(2)),
+            createDateLocation(event, 2L, now.plusDays(1), now.plusDays(1).plusHours(2)),
+            createDateLocation(event, 3L, now.plusDays(5), now.plusDays(5).plusHours(2)));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.UPCOMING, result.getStatus());
         assertEquals(dateLocations.get(1).getStartDate(), result.getNearestStart());
@@ -120,13 +120,13 @@ class EventStatusCalculatorTest {
         Event event = Event.builder().id(1L).build();
 
         List<EventDateLocation> dateLocations = Arrays.asList(
-                createDateLocation(event, 1L, now.minusDays(2), now.minusDays(1)), // PASSED
-                createDateLocation(event, 2L, now.minusHours(1), now.plusHours(1)), // LIVE
-                createDateLocation(event, 3L, now.plusDays(1), now.plusDays(1).plusHours(2)) // UPCOMING
+            createDateLocation(event, 1L, now.minusDays(2), now.minusDays(1)), // PASSED
+            createDateLocation(event, 2L, now.minusHours(1), now.plusHours(1)), // LIVE
+            createDateLocation(event, 3L, now.plusDays(1), now.plusDays(1).plusHours(2)) // UPCOMING
         );
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.LIVE, result.getStatus());
         assertEquals(dateLocations.get(1).getStartDate(), result.getNearestStart());
@@ -138,7 +138,7 @@ class EventStatusCalculatorTest {
         List<EventDateLocation> dateLocations = Collections.emptyList();
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.PASSED, result.getStatus());
         assertNull(result.getNearestStart());
@@ -150,7 +150,7 @@ class EventStatusCalculatorTest {
         LocalDateTime now = LocalDateTime.now();
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(null, now);
+            EventStatusCalculator.computeStatus(null, now);
 
         assertEquals(EventStatus.PASSED, result.getStatus());
         assertNull(result.getNearestStart());
@@ -161,10 +161,10 @@ class EventStatusCalculatorTest {
     void computeStatus_AtExactStartTime_ReturnsLive() {
         LocalDateTime now = LocalDateTime.now();
         List<EventDateLocation> dateLocations = createDateLocations(
-                now, now.plusHours(2));
+            now, now.plusHours(2));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.LIVE, result.getStatus());
     }
@@ -173,10 +173,10 @@ class EventStatusCalculatorTest {
     void computeStatus_AtExactFinishTime_ReturnsLive() {
         LocalDateTime now = LocalDateTime.now();
         List<EventDateLocation> dateLocations = createDateLocations(
-                now.minusHours(2), now);
+            now.minusHours(2), now);
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.LIVE, result.getStatus());
     }
@@ -185,10 +185,10 @@ class EventStatusCalculatorTest {
     void computeStatus_OneSecondBeforeStart_ReturnsUpcoming() {
         LocalDateTime now = LocalDateTime.now();
         List<EventDateLocation> dateLocations = createDateLocations(
-                now.plusSeconds(1), now.plusHours(2));
+            now.plusSeconds(1), now.plusHours(2));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.UPCOMING, result.getStatus());
     }
@@ -197,10 +197,10 @@ class EventStatusCalculatorTest {
     void computeStatus_OneSecondAfterFinish_ReturnsPassed() {
         LocalDateTime now = LocalDateTime.now();
         List<EventDateLocation> dateLocations = createDateLocations(
-                now.minusHours(2), now.minusSeconds(1));
+            now.minusHours(2), now.minusSeconds(1));
 
         EventStatusCalculator.EventStatusResult result =
-                EventStatusCalculator.computeStatus(dateLocations, now);
+            EventStatusCalculator.computeStatus(dateLocations, now);
 
         assertEquals(EventStatus.PASSED, result.getStatus());
     }
@@ -208,18 +208,18 @@ class EventStatusCalculatorTest {
     private List<EventDateLocation> createDateLocations(LocalDateTime start, LocalDateTime finish) {
         Event event = Event.builder().id(1L).build();
         return Collections.singletonList(
-                createDateLocation(event, 1L, start, finish));
+            createDateLocation(event, 1L, start, finish));
     }
 
     private EventDateLocation createDateLocation(Event event, Long id,
-                                                 LocalDateTime start, LocalDateTime finish) {
+        LocalDateTime start, LocalDateTime finish) {
         return EventDateLocation.builder()
-                .id(id)
-                .event(event)
-                .startDate(start)
-                .finishDate(finish)
-                .latitude(BigDecimal.valueOf(50.4501))
-                .longitude(BigDecimal.valueOf(30.5234))
-                .build();
+            .id(id)
+            .event(event)
+            .startDate(start)
+            .finishDate(finish)
+            .latitude(BigDecimal.valueOf(50.4501))
+            .longitude(BigDecimal.valueOf(30.5234))
+            .build();
     }
 }
