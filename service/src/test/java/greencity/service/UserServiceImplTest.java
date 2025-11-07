@@ -80,7 +80,6 @@ class UserServiceImplTest {
     }
 
     @Test
-    @Disabled
     void checkIfTheUserIsOnlineEqualsTrueTest() {
         ReflectionTestUtils.setField(userService, "timeAfterLastActivity", 300000L);
         Timestamp userLastActivityTime = Timestamp.valueOf(LocalDateTime.now());

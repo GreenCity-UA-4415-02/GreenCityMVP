@@ -5,7 +5,7 @@
 
     <changeSet id="add-event-date-locations-composite-index" author="Shankin">
         <createIndex tableName="events_dates_locations"
-                     indexName="idx_event_date_locations_event_start">
+                     indexName="idx_events_dates_locations_event_start">
             <column name="event_id"/>
             <column name="start_date"/>
         </createIndex>
@@ -24,7 +24,7 @@
 
         <rollback>
             <dropIndex tableName="events_dates_locations"
-                       indexName="idx_event_date_locations_finish_date"/>
+                       indexName="idx_events_dates_locations_finish_date"/>
         </rollback>
     </changeSet>
 
