@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import greencity.dto.event.EventNotificationDto;
-import greencity.dto.event.EventType;
 import greencity.dto.event.EventUpdatePayload;
 import greencity.dto.event.EventActionType;
 import reactor.core.publisher.Sinks;
@@ -123,7 +122,7 @@ public class EventServiceImpl implements EventService {
                 .eventTitle(saved.getTitle())
                 .organizerEmail(saved.getOrganizer().getEmail())
                 .organizerName(saved.getOrganizer().getName())
-                .eventType(EventType.CREATED)
+                .eventType(greencity.dto.event.EventType.CREATED)
                 .build());
 
         eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
@@ -324,7 +323,7 @@ public class EventServiceImpl implements EventService {
                 .eventTitle(event.getTitle())
                 .organizerEmail(event.getOrganizer().getEmail())
                 .organizerName(event.getOrganizer().getName())
-                .eventType(EventType.DELETED)
+                .eventType(greencity.dto.event.EventType.DELETED)
                 .build();
 
         List<String> paths = event.getImages() == null
@@ -436,7 +435,7 @@ public class EventServiceImpl implements EventService {
                 .eventTitle(saved.getTitle())
                 .organizerEmail(saved.getOrganizer().getEmail())
                 .organizerName(saved.getOrganizer().getName())
-                .eventType(EventType.EDITED)
+                .eventType(greencity.dto.event.EventType.EDITED)
                 .build());
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
