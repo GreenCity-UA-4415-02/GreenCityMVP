@@ -1,6 +1,8 @@
 package greencity.dto.event;
 
+import greencity.enums.EventStatus;
 import lombok.*;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -17,4 +19,7 @@ public class AddEventDtoResponse {
     private List<String> tagNames;
     private List<DateLocationDto> datesLocations;
     private List<String> images;
+    private EventStatus status;
+    private ZonedDateTime nearestStart;
+    private ZonedDateTime nearestFinish;
 }
