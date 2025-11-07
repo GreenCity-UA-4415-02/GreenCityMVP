@@ -30,11 +30,16 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 class EventServiceImplTest {
-    @Mock private EventRepo eventRepo;
-    @Mock private UserRepo userRepo;
-    @Mock private FileService fileService;
-    @Mock private EventAttenderRepo eventAttenderRepo;
-    @Mock private UserService userService;
+    @Mock
+    private EventRepo eventRepo;
+    @Mock
+    private UserRepo userRepo;
+    @Mock
+    private FileService fileService;
+    @Mock
+    private EventAttenderRepo eventAttenderRepo;
+    @Mock
+    private UserService userService;
 
     @InjectMocks
     private EventServiceImpl service;
@@ -53,51 +58,51 @@ class EventServiceImplTest {
 
     private EventDateLocation locFuture(int days) {
         return EventDateLocation.builder()
-                .startDate(LocalDateTime.now().plusDays(days))
-                .finishDate(LocalDateTime.now().plusDays(days).plusHours(2))
-                .latitude(BigDecimal.valueOf(50.4501))
-                .longitude(BigDecimal.valueOf(30.5234))
-                .build();
+            .startDate(LocalDateTime.now().plusDays(days))
+            .finishDate(LocalDateTime.now().plusDays(days).plusHours(2))
+            .latitude(BigDecimal.valueOf(50.4501))
+            .longitude(BigDecimal.valueOf(30.5234))
+            .build();
     }
 
     private EventDateLocation locLive() {
         return EventDateLocation.builder()
-                .startDate(LocalDateTime.now().minusHours(1))
-                .finishDate(LocalDateTime.now().plusHours(1))
-                .latitude(BigDecimal.valueOf(50.4501))
-                .longitude(BigDecimal.valueOf(30.5234))
-                .build();
+            .startDate(LocalDateTime.now().minusHours(1))
+            .finishDate(LocalDateTime.now().plusHours(1))
+            .latitude(BigDecimal.valueOf(50.4501))
+            .longitude(BigDecimal.valueOf(30.5234))
+            .build();
     }
 
     private EventDateLocation locPast() {
         return EventDateLocation.builder()
-                .startDate(LocalDateTime.now().minusDays(2))
-                .finishDate(LocalDateTime.now().minusDays(1))
-                .latitude(BigDecimal.valueOf(50.4501))
-                .longitude(BigDecimal.valueOf(30.5234))
-                .build();
+            .startDate(LocalDateTime.now().minusDays(2))
+            .finishDate(LocalDateTime.now().minusDays(1))
+            .latitude(BigDecimal.valueOf(50.4501))
+            .longitude(BigDecimal.valueOf(30.5234))
+            .build();
     }
 
     private EventImage img(String path, boolean main) {
         return EventImage.builder()
-                .imagePath(path)
-                .isMain(main)
-                .createdAt(LocalDateTime.now())
-                .build();
+            .imagePath(path)
+            .isMain(main)
+            .createdAt(LocalDateTime.now())
+            .build();
     }
 
     private Event eventWith(List<EventDateLocation> dls, List<EventImage> imgs, User organizer, boolean open) {
         Event e = Event.builder()
-                .id(IDS.getAndIncrement())
-                .title("Title")
-                .description("Description 1234567890 1234567890")
-                .isOpen(open)
-                .createdAt(LocalDateTime.now().minusDays(1))
-                .updatedAt(LocalDateTime.now().minusDays(1))
-                .organizer(organizer)
-                .dateTimeLocations(new ArrayList<>(dls))
-                .images(new ArrayList<>(imgs))
-                .build();
+            .id(IDS.getAndIncrement())
+            .title("Title")
+            .description("Description 1234567890 1234567890")
+            .isOpen(open)
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .updatedAt(LocalDateTime.now().minusDays(1))
+            .organizer(organizer)
+            .dateTimeLocations(new ArrayList<>(dls))
+            .images(new ArrayList<>(imgs))
+            .build();
         dls.forEach(dl -> dl.setEvent(e));
         imgs.forEach(i -> i.setEvent(e));
         return e;
@@ -105,36 +110,35 @@ class EventServiceImplTest {
 
     private AddEventDtoRequest addReq(boolean open, List<DateLocationDto> dls) {
         return new AddEventDtoRequest(
-                "Green City Workshop",
-                "Learn about sustainable living in details --- long enough text",
-                open,
-                Collections.emptyList(), // tags
-                dls
-        );
+            "Green City Workshop",
+            "Learn about sustainable living in details --- long enough text",
+            open,
+            Collections.emptyList(), // tags
+            dls);
     }
 
     private UpdateEventDtoRequest updReq(boolean open, List<DateLocationDto> dls) {
         return UpdateEventDtoRequest.builder()
-                .title("Updated")
-                .description("Updated Description 1234567890 ...")
-                .open(open)
-                .tags(Collections.emptyList())
-                .datesLocations(dls)
-                .build();
+            .title("Updated")
+            .description("Updated Description 1234567890 ...")
+            .open(open)
+            .tags(Collections.emptyList())
+            .datesLocations(dls)
+            .build();
     }
 
     private DateLocationDto dlDtoFuture(int days) {
         return DateLocationDto.builder()
-                .startDate(LocalDateTime.now().plusDays(days))
-                .finishDate(LocalDateTime.now().plusDays(days).plusHours(2))
-                .latitude(BigDecimal.valueOf(50.4501))
-                .longitude(BigDecimal.valueOf(30.5234))
-                .onlineLink(null)
-                .build();
+            .startDate(LocalDateTime.now().plusDays(days))
+            .finishDate(LocalDateTime.now().plusDays(days).plusHours(2))
+            .latitude(BigDecimal.valueOf(50.4501))
+            .longitude(BigDecimal.valueOf(30.5234))
+            .onlineLink(null)
+            .build();
     }
 
     private MultipartFile jpg(String name) {
-        return new MockMultipartFile(name, name, "image/jpeg", new byte[]{1,2,3});
+        return new MockMultipartFile(name, name, "image/jpeg", new byte[] {1, 2, 3});
     }
 
     // --- create(...) --------------------------------------------------------
@@ -230,7 +234,7 @@ class EventServiceImplTest {
         Event future = eventWith(List.of(locFuture(1)), List.of(img("p", true)), org, true);
 
         when(eventAttenderRepo.findJoinedEventsDefaultSorting(eq(userId), any(LocalDateTime.class), eq(pg)))
-                .thenReturn(new PageImpl<>(List.of(future), pg, 1));
+            .thenReturn(new PageImpl<>(List.of(future), pg, 1));
         when(userService.findById(userId)).thenReturn(UserVO.builder().id(userId).role(Role.ROLE_USER).build());
 
         Page<EventPreviewDto> res = service.getMyEvents(userId, null, null, null, null, pg);
@@ -247,13 +251,13 @@ class EventServiceImplTest {
         Event future = eventWith(List.of(locFuture(1)), List.of(img("p", true)), org, true);
 
         when(eventAttenderRepo.findJoinedEventsWithSorting(
-                eq(userId), any(LocalDateTime.class), eq(EventType.PLACE.name()),
-                anyDouble(), anyDouble(), eq(pg)))
-                .thenReturn(new PageImpl<>(List.of(future), pg, 1));
+            eq(userId), any(LocalDateTime.class), eq(EventType.PLACE.name()),
+            anyDouble(), anyDouble(), eq(pg)))
+            .thenReturn(new PageImpl<>(List.of(future), pg, 1));
         when(userService.findById(userId)).thenReturn(UserVO.builder().id(userId).role(Role.ROLE_USER).build());
 
         Page<EventPreviewDto> res = service.getMyEvents(userId, EventType.PLACE, EventStatus.UPCOMING,
-                50.45, 30.523, pg);
+            50.45, 30.523, pg);
 
         assertEquals(1, res.getContent().size());
         assertNotNull(res.getContent().getFirst().getDistance());
@@ -269,7 +273,7 @@ class EventServiceImplTest {
         Event future = eventWith(List.of(locFuture(1)), List.of(img("p", true)), org, true);
 
         when(eventRepo.findByOrganizerIdOrderByNearestStart(userId, pg))
-                .thenReturn(new PageImpl<>(List.of(future), pg, 1));
+            .thenReturn(new PageImpl<>(List.of(future), pg, 1));
         when(userService.findById(userId)).thenReturn(UserVO.builder().id(userId).role(Role.ROLE_USER).build());
 
         Page<EventPreviewDto> res = service.getMyCreatedEvents(userId, null, pg);
@@ -288,7 +292,7 @@ class EventServiceImplTest {
         Event past = eventWith(List.of(locPast()), List.of(img("p2", true)), org, true);
 
         when(eventRepo.findByOrganizerIdOrderByNearestStart(userId, pg))
-                .thenReturn(new PageImpl<>(List.of(future, past), pg, 2));
+            .thenReturn(new PageImpl<>(List.of(future, past), pg, 2));
         when(userService.findById(userId)).thenReturn(UserVO.builder().id(userId).role(Role.ROLE_USER).build());
 
         Page<EventPreviewDto> res = service.getMyCreatedEvents(userId, EventStatus.UPCOMING, pg);
@@ -307,7 +311,7 @@ class EventServiceImplTest {
         Event e = eventWith(List.of(locFuture(1)), List.of(img("p", true)), org, true);
 
         when(eventRepo.findRelatedEventsByUserId(userId, pg))
-                .thenReturn(new PageImpl<>(List.of(e), pg, 1));
+            .thenReturn(new PageImpl<>(List.of(e), pg, 1));
         when(userService.findById(userId)).thenReturn(UserVO.builder().id(userId).role(Role.ROLE_USER).build());
 
         Page<EventPreviewDto> res = service.getRelatedEvents(userId, null, pg);
@@ -325,7 +329,7 @@ class EventServiceImplTest {
         Event e2 = eventWith(List.of(locPast()), List.of(img("p2", true)), org, true);
 
         when(eventRepo.findRelatedEventsByUserId(userId, pg))
-                .thenReturn(new PageImpl<>(List.of(e1, e2), pg, 2));
+            .thenReturn(new PageImpl<>(List.of(e1, e2), pg, 2));
         when(userService.findById(userId)).thenReturn(UserVO.builder().id(userId).role(Role.ROLE_USER).build());
 
         Page<EventPreviewDto> res = service.getRelatedEvents(userId, EventStatus.UPCOMING, pg);
@@ -415,7 +419,8 @@ class EventServiceImplTest {
 
             UpdateEventDtoRequest req = updReq(true, List.of(dlDtoFuture(3)));
 
-            assertThrows(BadRequestException.class, () -> service.update(eventId, req, Collections.emptyList(), "org@x"));
+            assertThrows(BadRequestException.class,
+                () -> service.update(eventId, req, Collections.emptyList(), "org@x"));
             verify(eventRepo, never()).save(any(Event.class));
         } finally {
             TransactionSynchronizationManager.clearSynchronization();
@@ -451,7 +456,7 @@ class EventServiceImplTest {
     void addAttender_success_whenNotExists() {
         Long eventId = 40L;
         when(eventRepo.findById(eventId)).thenReturn(Optional.of(eventWith(
-                List.of(locFuture(1)), List.of(img("p", true)), makeUser(1L,"o@x", Role.ROLE_USER), true)));
+            List.of(locFuture(1)), List.of(img("p", true)), makeUser(1L, "o@x", Role.ROLE_USER), true)));
         when(eventAttenderRepo.existsByEventIdAndUserId(eq(eventId), eq(7L))).thenReturn(false);
 
         boolean ok = service.addAttender(eventId, UserVO.builder().id(7L).role(Role.ROLE_USER).build());
@@ -464,7 +469,7 @@ class EventServiceImplTest {
     void addAttender_whenAlreadyExists_returnsFalse() {
         Long eventId = 41L;
         when(eventRepo.findById(eventId)).thenReturn(Optional.of(eventWith(
-                List.of(locFuture(1)), List.of(img("p", true)), makeUser(2L,"o@x", Role.ROLE_USER), true)));
+            List.of(locFuture(1)), List.of(img("p", true)), makeUser(2L, "o@x", Role.ROLE_USER), true)));
         when(eventAttenderRepo.existsByEventIdAndUserId(eq(eventId), eq(7L))).thenReturn(true);
 
         boolean ok = service.addAttender(eventId, UserVO.builder().id(7L).role(Role.ROLE_USER).build());
@@ -479,7 +484,7 @@ class EventServiceImplTest {
     void removeAttender_success_upcomingAndWasAttending() {
         Long eventId = 50L;
         Event future = eventWith(List.of(locFuture(1)), List.of(img("p", true)),
-                makeUser(3L, "o@x", Role.ROLE_USER), true);
+            makeUser(3L, "o@x", Role.ROLE_USER), true);
 
         when(eventRepo.findById(eventId)).thenReturn(Optional.of(future));
         when(eventAttenderRepo.existsByEventIdAndUserId(eventId, 9L)).thenReturn(true);
@@ -495,12 +500,12 @@ class EventServiceImplTest {
     void removeAttender_passedEvent_throwsBadRequest() {
         Long eventId = 51L;
         Event past = eventWith(List.of(locPast()), List.of(img("p", true)),
-                makeUser(4L, "o@x", Role.ROLE_USER), true);
+            makeUser(4L, "o@x", Role.ROLE_USER), true);
 
         when(eventRepo.findById(eventId)).thenReturn(Optional.of(past));
 
         assertThrows(BadRequestException.class,
-                () -> service.removeAttender(eventId, UserVO.builder().id(9L).role(Role.ROLE_USER).build()));
+            () -> service.removeAttender(eventId, UserVO.builder().id(9L).role(Role.ROLE_USER).build()));
         verify(eventAttenderRepo, never()).deleteByEventIdAndUserId(anyLong(), anyLong());
     }
 }

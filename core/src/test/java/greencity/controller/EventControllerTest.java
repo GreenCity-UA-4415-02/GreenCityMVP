@@ -81,13 +81,12 @@ class EventControllerTest {
         var jacksonConverter = new MappingJackson2HttpMessageConverter(objectMapper);
 
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .setCustomArgumentResolvers(
-                        new PageableHandlerMethodArgumentResolver(),
-                        new TestUserArgumentResolver(mockUser)
-                )
-                .setControllerAdvice(advice)
-                .setMessageConverters(jacksonConverter)
-                .build();
+            .setCustomArgumentResolvers(
+                new PageableHandlerMethodArgumentResolver(),
+                new TestUserArgumentResolver(mockUser))
+            .setControllerAdvice(advice)
+            .setMessageConverters(jacksonConverter)
+            .build();
     }
 
     @Test
@@ -182,9 +181,8 @@ class EventControllerTest {
         @Override
         public Map<String, Object> getErrorAttributes(WebRequest webRequest, ErrorAttributeOptions options) {
             var newOptions = options.including(
-                    ErrorAttributeOptions.Include.MESSAGE,
-                    ErrorAttributeOptions.Include.EXCEPTION
-            );
+                ErrorAttributeOptions.Include.MESSAGE,
+                ErrorAttributeOptions.Include.EXCEPTION);
             return super.getErrorAttributes(webRequest, newOptions);
         }
     }
@@ -192,32 +190,36 @@ class EventControllerTest {
     static class TestUserArgumentResolver implements HandlerMethodArgumentResolver {
         private final UserVO user;
 
-        TestUserArgumentResolver(UserVO user) { this.user = user; }
+        TestUserArgumentResolver(UserVO user) {
+            this.user = user;
+        }
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
             return parameter.getParameterAnnotation(CurrentUser.class) != null
-                    && parameter.getParameterType().equals(UserVO.class);
+                && parameter.getParameterType().equals(UserVO.class);
         }
 
         @Override
         public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+            NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
             return user;
         }
     }
 
     private byte[] jpg(int sizeBytes) {
-        byte[] header = new byte[]{(byte)0xFF,(byte)0xD8,(byte)0xFF,(byte)0xE0};
+        byte[] header = new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0};
         byte[] out = new byte[sizeBytes];
         System.arraycopy(header, 0, out, 0, Math.min(header.length, out.length));
         return out;
     }
 
-    private byte[] jpg() { return jpg(1024); }
+    private byte[] jpg() {
+        return jpg(1024);
+    }
 
     private byte[] png() {
-        byte[] header = new byte[]{(byte)0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A};
+        byte[] header = new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
         byte[] rest = new byte[256];
         byte[] out = new byte[header.length + rest.length];
         System.arraycopy(header, 0, out, 0, header.length);
@@ -228,19 +230,19 @@ class EventControllerTest {
     UserVO mockUser = UserVO.builder().id(5L).email("test@example.com").name("Tester").build();
 
     DateLocationDto loc = DateLocationDto.builder()
-            .startDate(LocalDateTime.now().plusDays(1))
-            .finishDate(LocalDateTime.now().plusDays(1).plusHours(2))
-            .latitude(BigDecimal.valueOf(50.45))
-            .longitude(BigDecimal.valueOf(30.52))
-            .build();
+        .startDate(LocalDateTime.now().plusDays(1))
+        .finishDate(LocalDateTime.now().plusDays(1).plusHours(2))
+        .latitude(BigDecimal.valueOf(50.45))
+        .longitude(BigDecimal.valueOf(30.52))
+        .build();
 
     AddEventDtoRequest addReq = AddEventDtoRequest.builder()
-            .title("Eco Cleanup").description("Let’s clean the park together!")
-            .open(true).datesLocations(List.of(loc)).build();
+        .title("Eco Cleanup").description("Let’s clean the park together!")
+        .open(true).datesLocations(List.of(loc)).build();
 
     UpdateEventDtoRequest updReq = UpdateEventDtoRequest.builder()
-            .title("Updated Title").description("Updated long description")
-            .datesLocations(List.of(loc)).build();
+        .title("Updated Title").description("Updated long description")
+        .datesLocations(List.of(loc)).build();
 
     // ============================
     // POST /events/create
@@ -252,12 +254,12 @@ class EventControllerTest {
         MockMultipartFile dto = new MockMultipartFile("event", "", MediaType.APPLICATION_JSON_VALUE, json.getBytes());
 
         when(eventService.create(any(), anyList(), anyString()))
-                .thenThrow(new BadRequestException("Too many images"));
+            .thenThrow(new BadRequestException("Too many images"));
 
         mockMvc.perform(multipart("/events/create").file(dto)
-                        .contentType(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON)
-                        .principal((Principal) () -> "test@example.com"))
-                .andExpect(status().isBadRequest());
+            .contentType(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON)
+            .principal((Principal) () -> "test@example.com"))
+            .andExpect(status().isBadRequest());
     }
 
     // ============================
@@ -270,12 +272,12 @@ class EventControllerTest {
         when(eventService.getVisibleEvents("test@example.com")).thenReturn(List.of(e1, e2));
 
         mockMvc.perform(get("/events/visible").accept(MediaType.APPLICATION_JSON)
-                        .principal((Principal) () -> "test@example.com"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].title").value("Public Cleanup"))
-                .andExpect(jsonPath("$[1].open").value(false));
+            .principal((Principal) () -> "test@example.com"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].title").value("Public Cleanup"))
+            .andExpect(jsonPath("$[1].open").value(false));
 
         verify(eventService).getVisibleEvents("test@example.com");
     }
@@ -296,34 +298,34 @@ class EventControllerTest {
     @Test
     void getMyEvents_ok_withTypeAndCoords() throws Exception {
         EventPreviewDto preview = EventPreviewDto.builder()
-                .id(10L)
-                .title("Place Event")
-                .status(EventStatus.UPCOMING)
-                .nearestStart(LocalDateTime.now().plusDays(1))
-                .types(EventTypesDto.builder().place(true).online(false).build())
-                .distance(1.23).build();
+            .id(10L)
+            .title("Place Event")
+            .status(EventStatus.UPCOMING)
+            .nearestStart(LocalDateTime.now().plusDays(1))
+            .types(EventTypesDto.builder().place(true).online(false).build())
+            .distance(1.23).build();
 
         Page<EventPreviewDto> page = new PageImpl<>(List.of(preview), PageRequest.of(0, 10), 1);
         when(eventService.getMyEvents(eq(5L), eq(EventType.PLACE), isNull(), eq(50.45), eq(30.52), any(Pageable.class)))
-                .thenReturn(page);
+            .thenReturn(page);
 
         mockMvc.perform(get("/events/myEvents")
-                        .param("eventType", "PLACE")
-                        .param("userLatitude", "50.45")
-                        .param("userLongitude", "30.52")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(10))
-                .andExpect(jsonPath("$.content[0].status").value("UPCOMING"))
-                .andExpect(jsonPath("$.totalElements").value(1));
+            .param("eventType", "PLACE")
+            .param("userLatitude", "50.45")
+            .param("userLongitude", "30.52")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].id").value(10))
+            .andExpect(jsonPath("$.content[0].status").value("UPCOMING"))
+            .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
     void getMyEvents_invalidStatus_shouldReturn400() throws Exception {
         mockMvc.perform(get("/events/myEvents")
-                        .param("status", "INVALID")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+            .param("status", "INVALID")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
     }
 
     // ============================
@@ -332,26 +334,26 @@ class EventControllerTest {
     @Test
     void getMyCreatedEvents_ok_withStatus() throws Exception {
         EventPreviewDto dto = EventPreviewDto.builder()
-                .id(2L).title("My Created").status(EventStatus.LIVE).canEdit(true).build();
+            .id(2L).title("My Created").status(EventStatus.LIVE).canEdit(true).build();
         Page<EventPreviewDto> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
 
         when(eventService.getMyCreatedEvents(eq(5L), eq(EventStatus.LIVE), any(Pageable.class)))
-                .thenReturn(page);
+            .thenReturn(page);
 
         mockMvc.perform(get("/events/myEvents/createdEvents")
-                        .param("status", "LIVE")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].status").value("LIVE"))
-                .andExpect(jsonPath("$.totalElements").value(1));
+            .param("status", "LIVE")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].status").value("LIVE"))
+            .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
     void getMyCreatedEvents_invalidStatus_shouldReturn400() throws Exception {
         mockMvc.perform(get("/events/myEvents/createdEvents")
-                        .param("status", "BAD")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+            .param("status", "BAD")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
     }
 
     // ============================
@@ -366,10 +368,10 @@ class EventControllerTest {
         when(eventService.getRelatedEvents(eq(5L), isNull(), any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/events/myEvents/relatedEvents").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)))
-                .andExpect(jsonPath("$.content[0].title").value("Created"))
-                .andExpect(jsonPath("$.content[1].canEdit").value(false));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(2)))
+            .andExpect(jsonPath("$.content[0].title").value("Created"))
+            .andExpect(jsonPath("$.content[1].canEdit").value(false));
     }
 
     @Test
@@ -378,15 +380,15 @@ class EventControllerTest {
         Page<EventPreviewDto> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 5), 1);
 
         when(eventService.getRelatedEvents(eq(5L), eq(EventStatus.UPCOMING), any(Pageable.class)))
-                .thenReturn(page);
+            .thenReturn(page);
 
         mockMvc.perform(get("/events/myEvents/relatedEvents")
-                        .param("status", "UPCOMING")
-                        .param("size", "5")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].status").value("UPCOMING"))
-                .andExpect(jsonPath("$.size").value(5));
+            .param("status", "UPCOMING")
+            .param("size", "5")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].status").value("UPCOMING"))
+            .andExpect(jsonPath("$.size").value(5));
     }
 
     // ============================
@@ -397,8 +399,8 @@ class EventControllerTest {
         doNothing().when(eventService).deleteEvent(100L, "test@example.com");
 
         mockMvc.perform(delete("/events/delete/{eventId}", 100L)
-                        .principal((Principal) () -> "test@example.com"))
-                .andExpect(status().isNoContent());
+            .principal((Principal) () -> "test@example.com"))
+            .andExpect(status().isNoContent());
 
         verify(eventService).deleteEvent(100L, "test@example.com");
     }
@@ -406,12 +408,12 @@ class EventControllerTest {
     @Test
     void deleteEvent_badRequest() throws Exception {
         doThrow(new BadRequestException("Only organizer or admin can delete"))
-                .when(eventService).deleteEvent(5L, "test@example.com");
+            .when(eventService).deleteEvent(5L, "test@example.com");
 
         mockMvc.perform(delete("/events/delete/{eventId}", 5L)
-                        .principal((Principal) () -> "test@example.com")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+            .principal((Principal) () -> "test@example.com")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
     }
 
     // ============================
@@ -424,15 +426,18 @@ class EventControllerTest {
         MockMultipartFile dto = new MockMultipartFile("event", "", MediaType.APPLICATION_JSON_VALUE, json.getBytes());
 
         when(eventService.update(eq(3L), any(UpdateEventDtoRequest.class), anyList(), anyString()))
-                .thenThrow(new BadRequestException("Title must be between 1 and 70 characters"));
+            .thenThrow(new BadRequestException("Title must be between 1 and 70 characters"));
 
         mockMvc.perform(multipart("/events/{eventId}", 3L)
-                        .file(dto)
-                        .with(req -> { req.setMethod("PUT"); return req; })
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .principal((Principal) () -> "test@example.com"))
-                .andExpect(status().isBadRequest());
+            .file(dto)
+            .with(req -> {
+                req.setMethod("PUT");
+                return req;
+            })
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .accept(MediaType.APPLICATION_JSON)
+            .principal((Principal) () -> "test@example.com"))
+            .andExpect(status().isBadRequest());
     }
 
     // ============================
