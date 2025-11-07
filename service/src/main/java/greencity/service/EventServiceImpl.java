@@ -1,20 +1,26 @@
 package greencity.service;
 
-import greencity.dto.event.AddEventDtoRequest;
-import greencity.dto.event.AddEventDtoResponse;
-import greencity.dto.event.EventDto;
-import greencity.dto.event.UpdateEventDtoRequest;
+import greencity.dto.event.*;
+import greencity.dto.user.UserVO;
 import greencity.entity.*;
+import greencity.enums.EventStatus;
+import greencity.enums.EventType;
 import greencity.enums.Role;
 import greencity.exception.exceptions.BadRequestException;
+import greencity.exception.exceptions.NotFoundException;
+import greencity.repository.EventAttenderRepo;
 import greencity.repository.EventRepo;
 import greencity.repository.UserRepo;
-import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,6 +31,7 @@ import greencity.dto.event.EventActionType;
 import reactor.core.publisher.Sinks;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepo eventRepo;
@@ -32,6 +39,8 @@ public class EventServiceImpl implements EventService {
     private final FileService fileService;
     private final EventNotificationProducer notificationProducer;
     private final Sinks.Many<EventUpdatePayload> eventUpdateSink;
+    private final EventAttenderRepo eventAttenderRepo;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -143,6 +152,159 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
+    public Page<EventPreviewDto> getMyEvents(Long userId, EventType eventType, EventStatus status,
+        Double userLatitude, Double userLongitude, Pageable pageable) {
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        Page<Event> events;
+
+        if (eventType != null && eventType != EventType.BOTH) {
+            Double latitude = (userLatitude != null) ? userLatitude : 0.0;
+            Double longitude = (userLongitude != null) ? userLongitude : 0.0;
+
+            events = eventAttenderRepo.findJoinedEventsWithSorting(
+                userId, currentTime, eventType.name(), latitude, longitude, pageable);
+        } else {
+            events = eventAttenderRepo.findJoinedEventsDefaultSorting(
+                userId, currentTime, pageable);
+        }
+
+        UserVO currentUser = userService.findById(userId);
+        boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
+
+        List<EventPreviewDto> eventPreviews = events.getContent().stream()
+            .map(event -> toEventPreviewDtoWithContext(event, userId, isAdmin, userLatitude, userLongitude, eventType))
+            .filter(event -> status == null || event.getStatus() == status)
+            .collect(Collectors.toList());
+
+        return new PageImpl<>(eventPreviews, pageable, events.getTotalElements());
+    }
+
+    @Override
+    @Transactional
+    public Page<EventPreviewDto> getMyCreatedEvents(Long userId, EventStatus status, Pageable pageable) {
+        Page<Event> events = eventRepo.findByOrganizerIdOrderByNearestStart(userId, pageable);
+
+        UserVO currentUser = userService.findById(userId);
+        boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
+
+        List<EventPreviewDto> eventPreviews = events.getContent().stream()
+            .map(event -> toEventPreviewDtoWithCanEdit(event, userId, isAdmin))
+            .filter(event -> status == null || event.getStatus() == status)
+            .collect(Collectors.toList());
+
+        return new PageImpl<>(eventPreviews, pageable, events.getTotalElements());
+    }
+
+    @Override
+    @Transactional
+    public Page<EventPreviewDto> getRelatedEvents(Long userId, EventStatus status, Pageable pageable) {
+        Page<Event> events = eventRepo.findRelatedEventsByUserId(userId, pageable);
+
+        UserVO currentUser = userService.findById(userId);
+        boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
+
+        List<EventPreviewDto> eventPreviews = events.getContent().stream()
+            .map(event -> toEventPreviewDtoWithCanEdit(event, userId, isAdmin))
+            .filter(event -> status == null || event.getStatus() == status)
+            .collect(Collectors.toList());
+
+        return new PageImpl<>(eventPreviews, pageable, events.getTotalElements());
+    }
+
+    private EventPreviewDto toEventPreviewDtoWithCanEdit(Event event, Long currentUserId, boolean isAdmin) {
+        return toEventPreviewDtoWithContext(event, currentUserId, isAdmin, null, null, null);
+    }
+
+    private EventPreviewDto toEventPreviewDtoWithContext(
+        Event event,
+        Long currentUserId,
+        boolean isAdmin,
+        Double userLatitude,
+        Double userLongitude,
+        EventType eventType) {
+        EventStatusCalculator.EventStatusResult statusResult =
+            EventStatusCalculator.computeStatus(event.getDateTimeLocations(), LocalDateTime.now());
+
+        boolean isOrganizer = currentUserId != null && event.getOrganizer().getId() != null
+            && event.getOrganizer().getId().equals(currentUserId);
+        boolean canEdit = (isOrganizer || isAdmin) && statusResult.getStatus() != EventStatus.PASSED;
+        boolean canCancelJoin = statusResult.getStatus() != EventStatus.LIVE
+            && statusResult.getStatus() != EventStatus.PASSED;
+        boolean hasPlace = event.getDateTimeLocations().stream()
+            .anyMatch(loc -> loc.getLatitude() != null && loc.getLongitude() != null);
+        boolean hasOnline = event.getDateTimeLocations().stream()
+            .anyMatch(loc -> loc.getOnlineLink() != null && !loc.getOnlineLink().isBlank());
+
+        EventTypesDto types = EventTypesDto.builder()
+            .place(hasPlace)
+            .online(hasOnline)
+            .build();
+
+        Double distance = computeMinDistanceKm(event, userLatitude, userLongitude,
+            eventType != null ? eventType : EventType.BOTH);
+
+        String titleImage = event.getImages().stream()
+            .filter(EventImage::getIsMain)
+            .findFirst()
+            .map(EventImage::getImagePath)
+            .orElse(null);
+
+        return EventPreviewDto.builder()
+            .id(event.getId())
+            .title(event.getTitle())
+            .titleImage(titleImage)
+            .status(statusResult.getStatus())
+            .nearestStart(statusResult.getNearestStart())
+            .nearestFinish(statusResult.getNearestFinish())
+            .types(types)
+            .distance(distance)
+            .visibility(event.getIsOpen() ? "open" : "closed")
+            .canCancelJoin(canCancelJoin)
+            .canEdit(canEdit)
+            .isFavourite(false)
+            .isSubscribed(false)
+            .isOrganizer(isOrganizer)
+            .build();
+    }
+
+    private Double computeMinDistanceKm(Event event, Double userLatitude, Double userLongitude, EventType eventType) {
+        if (userLatitude == null || userLongitude == null) {
+            return null;
+        }
+        if (eventType != EventType.PLACE) {
+            return null;
+        }
+        List<EventDateLocation> locations = event.getDateTimeLocations();
+        if (locations == null || locations.isEmpty()) {
+            return null;
+        }
+        Double min = null;
+        for (EventDateLocation loc : locations) {
+            if (loc.getLatitude() == null || loc.getLongitude() == null) {
+                continue;
+            }
+            double d = haversineKm(userLatitude, userLongitude, loc.getLatitude(), loc.getLongitude());
+            if (min == null || d < min) {
+                min = d;
+            }
+        }
+        return min;
+    }
+
+    private double haversineKm(double lat1, double lon1, BigDecimal lat2, BigDecimal lon2) {
+        double rad = 6371.0;
+        double diffLat = Math.toRadians(lat2.doubleValue() - lat1);
+        double diffLon = Math.toRadians(lon2.doubleValue() - lon1);
+        double a = Math.sin(diffLat / 2) * Math.sin(diffLat / 2)
+            + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2.doubleValue()))
+                * Math.sin(diffLon / 2) * Math.sin(diffLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return rad * c;
+    }
+
+    @Override
+    @Transactional
     public void deleteEvent(Long eventId, String userEmail) {
         Event event = eventRepo.findById(eventId)
             .orElseThrow(() -> new BadRequestException("Event not found"));
@@ -234,7 +396,7 @@ public class EventServiceImpl implements EventService {
                 .onlineLink(dl.getOnlineLink())
                 .event(event)
                 .build())
-            .collect(Collectors.toList());
+            .toList();
         event.getDateTimeLocations().addAll(updatedDates);
 
         List<String> oldPaths = event.getImages() == null
@@ -312,6 +474,45 @@ public class EventServiceImpl implements EventService {
             .build();
     }
 
+    private EventDto toEventDto(Event event) {
+        List<EventDateLocationDto> dateDtos = event.getDateTimeLocations().stream()
+            .map(loc -> EventDateLocationDto.builder()
+                .startDate(loc.getStartDate())
+                .finishDate(loc.getFinishDate())
+                .latitude(loc.getLatitude())
+                .longitude(loc.getLongitude())
+                .onlineLink(loc.getOnlineLink())
+                .build())
+            .toList();
+
+        List<String> imageUrls = event.getImages().stream()
+            .map(EventImage::getImagePath)
+            .toList();
+
+        EventStatusCalculator.EventStatusResult statusResult =
+            EventStatusCalculator.computeStatus(event.getDateTimeLocations(), LocalDateTime.now());
+
+        return EventDto.builder()
+            .id(event.getId())
+            .title(event.getTitle())
+            .description(event.getDescription())
+            .isOpen((event.getIsOpen()))
+            .organizerId(event.getOrganizer().getId())
+            .titleImage(event.getImages().stream()
+                .filter(EventImage::getIsMain)
+                .findFirst()
+                .map(EventImage::getImagePath)
+                .orElse(null))
+            .createdAt(event.getCreatedAt())
+            .updatedAt(event.getUpdatedAt())
+            .datesLocations(dateDtos)
+            .imageUrls(imageUrls)
+            .status(statusResult.getStatus())
+            .nearestStart(statusResult.getNearestStart())
+            .nearestFinish(statusResult.getNearestFinish())
+            .build();
+    }
+
     private void validateRequest(AddEventDtoRequest dto, List<MultipartFile> images) {
         if (dto.getTitle().length() > 70) {
             throw new BadRequestException("Title must be ≤ 70 chars");
@@ -346,5 +547,52 @@ public class EventServiceImpl implements EventService {
                 }
             }
         }
+    }
+
+    @Override
+    public EventDto getEventById(Long eventId) {
+        Event event = eventRepo.findById(eventId)
+            .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found"));
+
+        return mapToEventDto(event);
+    }
+
+    @Override
+    @Transactional
+    public boolean addAttender(Long eventId, UserVO user) {
+        eventRepo.findById(eventId)
+            .orElseThrow(() -> new NotFoundException("Event doesn't exist by this id: " + eventId));
+
+        if (eventAttenderRepo.existsByEventIdAndUserId(eventId, user.getId())) {
+            return false;
+        }
+
+        EventAttender attender = EventAttender.builder()
+            .eventId(eventId)
+            .userId(user.getId())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        eventAttenderRepo.save(attender);
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean removeAttender(Long eventId, UserVO user) {
+        Event event = eventRepo.findById(eventId)
+            .orElseThrow(() -> new NotFoundException("Event doesn't exist by this id: " + eventId));
+
+        EventDto eventDto = toEventDto(event);
+        if (eventDto.getStatus() == EventStatus.PASSED) {
+            throw new BadRequestException("Cannot cancel attendance for events that have already passed");
+        }
+
+        if (!eventAttenderRepo.existsByEventIdAndUserId(eventId, user.getId())) {
+            return false;
+        }
+
+        int deletedCount = eventAttenderRepo.deleteByEventIdAndUserId(eventId, user.getId());
+        return deletedCount > 0;
     }
 }

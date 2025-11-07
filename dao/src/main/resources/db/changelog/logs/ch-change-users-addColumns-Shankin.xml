@@ -16,10 +16,6 @@
                 <constraints nullable="true"/>
             </column>
 
-            <column name="avatar_url" type="TEXT">
-                <constraints nullable="true"/>
-            </column>
-
             <column name="email_verified" type="BOOLEAN">
                 <constraints nullable="true"/>
             </column>
@@ -27,7 +23,6 @@
 
         <rollback>
             <dropColumn schemaName="public" tableName="users" columnName="email_verified"/>
-            <dropColumn schemaName="public" tableName="users" columnName="avatar_url"/>
             <dropColumn schemaName="public" tableName="users" columnName="provider_id"/>
             <dropColumn schemaName="public" tableName="users" columnName="provider"/>
         </rollback>
