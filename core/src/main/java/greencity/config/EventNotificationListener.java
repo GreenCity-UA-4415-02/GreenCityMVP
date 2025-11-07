@@ -14,8 +14,8 @@ public class EventNotificationListener {
     @RabbitListener(queues = QUEUE_NAME)
     public void handleMessage(EventNotificationDto notification) {
         log.info("Received event notification from RabbitMQ: eventId={}, title='{}', type={}",
-                notification.getEventId(),
-                notification.getEventTitle(),
-                notification.getEventType());
+            notification.getEventId(),
+            notification.getEventTitle(),
+            notification.getEventType());
     }
 }

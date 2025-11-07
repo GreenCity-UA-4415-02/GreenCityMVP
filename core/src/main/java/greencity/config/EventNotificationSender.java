@@ -20,8 +20,8 @@ public class EventNotificationSender {
         rabbitTemplate.convertAndSend(EXCHANGE_NAME, ROUTING_KEY, notification);
 
         log.info("Sent event notification to RabbitMQ: eventId={}, title='{}', type={}",
-                notification.getEventId(),
-                notification.getEventTitle(),
-                notification.getEventType());
+            notification.getEventId(),
+            notification.getEventTitle(),
+            notification.getEventType());
     }
 }

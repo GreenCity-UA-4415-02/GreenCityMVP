@@ -26,13 +26,13 @@ public class EventNotificationProducer {
             rabbitTemplate.convertAndSend(exchange, routingKey, notification);
 
             log.info("Sent event notification: eventId={}, title='{}', type={}",
-                    notification.getEventId(),
-                    notification.getEventTitle(),
-                    notification.getEventType());
+                notification.getEventId(),
+                notification.getEventTitle(),
+                notification.getEventType());
 
         } catch (AmqpException e) {
             log.error("Failed to send event notification: eventId={}. Error: {}",
-                    notification.getEventId(), e.getMessage());
+                notification.getEventId(), e.getMessage());
         }
     }
 }

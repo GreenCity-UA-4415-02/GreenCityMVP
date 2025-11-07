@@ -14,8 +14,9 @@ public class EventSubscriptionController {
     private final Sinks.Many<EventUpdatePayload> eventUpdateSink;
 
     /**
-     * Цей метод обробляє підписку "eventUpdates", визначену в GraphQL-схемі.
-     * Він повертає потік (Flux), на який підписується клієнт.
+     * Цей метод обробляє підписку "eventUpdates", визначену в GraphQL-схемі. Він
+     * повертає потік (Flux), на який підписується клієнт.
+     *
      * @return a Publisher (Flux) of event updates.
      */
     @SubscriptionMapping

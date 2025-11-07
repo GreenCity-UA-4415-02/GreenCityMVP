@@ -118,18 +118,18 @@ public class EventServiceImpl implements EventService {
         Event saved = eventRepo.save(event);
 
         notificationProducer.sendNotification(EventNotificationDto.builder()
-                .eventId(saved.getId())
-                .eventTitle(saved.getTitle())
-                .organizerEmail(saved.getOrganizer().getEmail())
-                .organizerName(saved.getOrganizer().getName())
-                .eventType(greencity.dto.event.EventType.CREATED)
-                .build());
+            .eventId(saved.getId())
+            .eventTitle(saved.getTitle())
+            .organizerEmail(saved.getOrganizer().getEmail())
+            .organizerName(saved.getOrganizer().getName())
+            .eventType(greencity.dto.event.EventType.CREATED)
+            .build());
 
         eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
-                .id(saved.getId())
-                .title(saved.getTitle())
-                .eventType(EventActionType.CREATED)
-                .build());
+            .id(saved.getId())
+            .title(saved.getTitle())
+            .eventType(EventActionType.CREATED)
+            .build());
 
         return AddEventDtoResponse.builder()
             .id(saved.getId())
@@ -319,22 +319,22 @@ public class EventServiceImpl implements EventService {
         }
 
         EventNotificationDto notification = EventNotificationDto.builder()
-                .eventId(event.getId())
-                .eventTitle(event.getTitle())
-                .organizerEmail(event.getOrganizer().getEmail())
-                .organizerName(event.getOrganizer().getName())
-                .eventType(greencity.dto.event.EventType.DELETED)
-                .build();
+            .eventId(event.getId())
+            .eventTitle(event.getTitle())
+            .organizerEmail(event.getOrganizer().getEmail())
+            .organizerName(event.getOrganizer().getName())
+            .eventType(greencity.dto.event.EventType.DELETED)
+            .build();
 
         List<String> paths = event.getImages() == null
             ? List.of()
             : event.getImages().stream().map(EventImage::getImagePath).toList();
 
         eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
-                .id(event.getId())
-                .title(event.getTitle())
-                .eventType(EventActionType.DELETED)
-                .build());
+            .id(event.getId())
+            .title(event.getTitle())
+            .eventType(EventActionType.DELETED)
+            .build());
 
         eventRepo.delete(event);
 
@@ -431,12 +431,12 @@ public class EventServiceImpl implements EventService {
         Event saved = eventRepo.save(event);
 
         notificationProducer.sendNotification(EventNotificationDto.builder()
-                .eventId(saved.getId())
-                .eventTitle(saved.getTitle())
-                .organizerEmail(saved.getOrganizer().getEmail())
-                .organizerName(saved.getOrganizer().getName())
-                .eventType(greencity.dto.event.EventType.EDITED)
-                .build());
+            .eventId(saved.getId())
+            .eventTitle(saved.getTitle())
+            .organizerEmail(saved.getOrganizer().getEmail())
+            .organizerName(saved.getOrganizer().getName())
+            .eventType(greencity.dto.event.EventType.EDITED)
+            .build());
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -446,10 +446,10 @@ public class EventServiceImpl implements EventService {
         });
 
         eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
-                .id(saved.getId())
-                .title(saved.getTitle())
-                .eventType(EventActionType.EDITED)
-                .build());
+            .id(saved.getId())
+            .title(saved.getTitle())
+            .eventType(EventActionType.EDITED)
+            .build());
 
         return AddEventDtoResponse.builder()
             .id(saved.getId())
