@@ -52,7 +52,7 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/{id}/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Edit existing event (organizer or admin only).")
     public ResponseEntity<AddEventDtoResponse> updateEvent(
