@@ -24,6 +24,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import greencity.dto.event.EventNotificationDto;
+import greencity.dto.event.EventUpdatePayload;
+import greencity.dto.event.EventActionType;
+import reactor.core.publisher.Sinks;
 
 @Service
 @Transactional(readOnly = true)
@@ -32,6 +36,8 @@ public class EventServiceImpl implements EventService {
     private final EventRepo eventRepo;
     private final UserRepo userRepo;
     private final FileService fileService;
+    private final EventNotificationProducer notificationProducer;
+    private final Sinks.Many<EventUpdatePayload> eventUpdateSink;
     private final EventAttenderRepo eventAttenderRepo;
     private final UserService userService;
 
@@ -110,6 +116,20 @@ public class EventServiceImpl implements EventService {
         });
 
         Event saved = eventRepo.save(event);
+
+        notificationProducer.sendNotification(EventNotificationDto.builder()
+            .eventId(saved.getId())
+            .eventTitle(saved.getTitle())
+            .organizerEmail(saved.getOrganizer().getEmail())
+            .organizerName(saved.getOrganizer().getName())
+            .eventType(greencity.dto.event.EventType.CREATED)
+            .build());
+
+        eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
+            .id(saved.getId())
+            .title(saved.getTitle())
+            .eventType(EventActionType.CREATED)
+            .build());
 
         return AddEventDtoResponse.builder()
             .id(saved.getId())
@@ -298,11 +318,29 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("Only organizer or admin can delete event");
         }
 
-        List<String> paths = event.getImages() == null
-            ? List.of()
-            : event.getImages().stream().map(EventImage::getImagePath).toList();
+        EventNotificationDto notification = EventNotificationDto.builder()
+            .eventId(event.getId())
+            .eventTitle(event.getTitle())
+            .organizerEmail(event.getOrganizer().getEmail())
+            .organizerName(event.getOrganizer().getName())
+            .eventType(greencity.dto.event.EventType.DELETED)
+            .build();
+
+        eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
+            .id(event.getId())
+            .title(event.getTitle())
+            .eventType(EventActionType.DELETED)
+            .build());
 
         eventRepo.delete(event);
+
+        notificationProducer.sendNotification(notification);
+
+        List<String> paths = event.getImages() == null
+            ? List.of()
+            : event.getImages().stream()
+                .map(EventImage::getImagePath)
+                .toList();
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -394,12 +432,26 @@ public class EventServiceImpl implements EventService {
 
         Event saved = eventRepo.save(event);
 
+        notificationProducer.sendNotification(EventNotificationDto.builder()
+            .eventId(saved.getId())
+            .eventTitle(saved.getTitle())
+            .organizerEmail(saved.getOrganizer().getEmail())
+            .organizerName(saved.getOrganizer().getName())
+            .eventType(greencity.dto.event.EventType.EDITED)
+            .build());
+
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 oldPaths.forEach(fileService::delete);
             }
         });
+
+        eventUpdateSink.tryEmitNext(EventUpdatePayload.builder()
+            .id(saved.getId())
+            .title(saved.getTitle())
+            .eventType(EventActionType.EDITED)
+            .build());
 
         return AddEventDtoResponse.builder()
             .id(saved.getId())

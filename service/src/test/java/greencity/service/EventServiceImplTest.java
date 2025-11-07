@@ -19,6 +19,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import reactor.core.publisher.Sinks;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,6 +41,10 @@ class EventServiceImplTest {
     private EventAttenderRepo eventAttenderRepo;
     @Mock
     private UserService userService;
+    @Mock
+    private EventNotificationProducer notificationProducer;
+    @Mock
+    private Sinks.Many<EventUpdatePayload> eventUpdateSink;
 
     @InjectMocks
     private EventServiceImpl service;
@@ -167,6 +172,7 @@ class EventServiceImplTest {
             assertEquals(2, resp.getImages().size());
             verify(fileService, times(2)).upload(any());
             verify(eventRepo).save(any(Event.class));
+            verify(notificationProducer).sendNotification(any());
         } finally {
             TransactionSynchronizationManager.clearSynchronization();
         }
